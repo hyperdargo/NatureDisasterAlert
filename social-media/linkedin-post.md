@@ -1,6 +1,13 @@
 # LinkedIn post
 
 Three versions below. Pick one, paste it, attach `workflow.png`.
+
+Two companion files:
+
+- `linkedin-debugging-post.md` — what broke and how it was fixed. Usually the
+  stronger post: specific bugs read better than a feature list.
+- `image-prompts.md` — prompts for generating your own diagram, in the plain
+  boxes-and-arrows style.
 Written in first person so it can go up as-is. Every number and claim in here
 is true of the deployed build; if you change the app, change these too.
 
