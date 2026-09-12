@@ -138,6 +138,7 @@ export async function fetchRoadAdvisory(
     await runOverpass(buildQuery(candidates.map((e) => ({ lat: e.lat, lon: e.lon })))),
   );
 
+  // Keyed by road reference plus a normalised name; see the comment below.
   const unique = new Map<
     string,
     { name: string; ref: string | null; classification: string; rank: number }
@@ -149,8 +150,14 @@ export async function fetchRoadAdvisory(
     const name = (tags["name:en"] ?? tags.name ?? "").trim();
     if (!name) continue;
     const highway = tags.highway ?? "";
-    // A long highway appears as many ways; one entry per name is enough.
-    unique.set(name, {
+    // A long highway appears as many ways, and OpenStreetMap carries spelling
+    // variants of the same road ("Prithvi" and "Prithivi", "Siddhartha" and
+    // "Sidhartha"). Keying on a normalised form collapses both, so the list
+    // does not show the same highway three times.
+    const key = `${(tags.ref ?? "").trim()}|${name.toLowerCase().replace(/[^a-z]/g, "")}`
+      .replace(/(prith?i?vi)/, "prithvi")
+      .replace(/(sidd?h?arth?a)/, "siddhartha");
+    unique.set(key, {
       name,
       ref: tags.ref?.trim() || null,
       classification: CLASS_LABEL[highway] ?? "Road",

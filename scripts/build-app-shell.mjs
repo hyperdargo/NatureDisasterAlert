@@ -42,6 +42,20 @@ const SITE =
 let renamed = false;
 
 function restore() {
+  /**
+   * Delete the build directory on the way out.
+   *
+   * `output: "export"` writes its build into .next just like a server build
+   * does, but with trailingSlash set. Leaving that behind meant the next
+   * deploy served an export build: every API route answered 308 then 404, no
+   * script carried a nonce, React never booted, and the site came up looking
+   * fine with nothing on it working.
+   *
+   * Removing it means a deploy that forgets to rebuild fails loudly with a
+   * missing build rather than quietly serving a broken one.
+   */
+  rmSync(join(root, ".next"), { recursive: true, force: true });
+
   if (renamed && existsSync(apiHidden)) {
     renameSync(apiHidden, apiDir);
     renamed = false;
@@ -102,10 +116,10 @@ export default nextConfig;
   renameSync(apiDir, apiHidden);
   renamed = true;
 
-  // Next keeps generated route types under .next and they still reference the
-  // routes just hidden, which fails the type check. A clean build directory is
-  // the simplest fix and costs only a recompile.
+  // Both are cleared so nothing stale is picked up: a previous out/ would
+  // otherwise be copied into the APK and silently ship an old interface.
   rmSync(join(root, ".next"), { recursive: true, force: true });
+  rmSync(outDir, { recursive: true, force: true });
 
   console.log(`> Building static shell against ${SITE}\n`);
   execFileSync(
@@ -142,7 +156,8 @@ export default nextConfig;
   Static shell written to android-app-shell/
   Data will be fetched from ${SITE}
 
-  Next: npx cap sync android && npm run apk
+  .next was removed: an export build left there would break a deploy.
+  Run "npm run build" before deploying the website.
 `);
 } finally {
   restore();

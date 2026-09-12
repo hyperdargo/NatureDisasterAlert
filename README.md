@@ -70,7 +70,10 @@ numbers.
 There are no user accounts and no personal data is stored, so there is no user
 database to breach. Beyond that:
 
-- Nonce-based Content Security Policy, set per request (`src/proxy.ts`)
+- Content Security Policy on every response (`src/proxy.ts`). Scripts are
+  allowed by origin rather than by nonce: nonces require `force-dynamic` on
+  every page, which cannot coexist with the static export the Android app is
+  built from. The trade-off and what it costs are written out in that file.
 - Every upstream response validated with Zod before it reaches the UI
 - Timeouts, response size caps and one retry on transport failures
 - Rate limiting on all API routes
@@ -97,8 +100,9 @@ Three things commonly recommended for a "professional" site are absent on
 purpose:
 
 - **No analytics.** Not Google Analytics, not any other. The site tells every
-  visitor it does not track them, and the Content Security Policy enforces it.
-  Adding a tracker would make the privacy page a lie.
+  visitor it does not track them, and the Content Security Policy blocks
+  third-party script origins. Adding a tracker would make the privacy page a
+  lie.
 - **No LocalBusiness schema.** This is not a business, has no address and sells
   nothing. Declaring that markup to win a rich result would be structured-data
   spam. It is marked up as a `WebApplication`, which is what it is.

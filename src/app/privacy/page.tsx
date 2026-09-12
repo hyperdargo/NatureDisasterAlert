@@ -31,7 +31,7 @@ const COLLECTED = [
   {
     what: "No analytics or advertising trackers",
     detail:
-      "No Google Analytics, no advertising pixels, no third-party tracking scripts of any kind. The Content Security Policy actively blocks them, so one could not be added silently.",
+      "No Google Analytics, no advertising pixels, no third-party tracking scripts of any kind. The Content Security Policy restricts scripts to this site's own origin, so a third-party tracker cannot be added without changing that policy in the open.",
   },
   {
     what: "No cookies for tracking",

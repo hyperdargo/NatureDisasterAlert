@@ -37,9 +37,10 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
-  // Emits a self-contained server with only the modules actually imported,
-  // which is what the Docker image copies instead of all of node_modules.
-  output: "standalone",
+  // Opt-in, because "next start" refuses to run against a standalone build.
+  // The Docker image sets this and runs node server.js; every other way of
+  // running the app keeps working with npm start.
+  output: process.env.BUILD_STANDALONE === "1" ? "standalone" : undefined,
   // Source maps would ship the readable source of every component to any
   // visitor who opens devtools, and roughly double the transferred bytes.
   productionBrowserSourceMaps: false,

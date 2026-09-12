@@ -138,6 +138,11 @@ if (existsSync(idsig)) rmSync(idsig);
 
 run(apksigner, ["verify", "--print-certs", signed]);
 
+// The shell build deletes .next, since an export build left there would break
+// the website deploy. Rebuild it so the working tree is ready to deploy.
+console.log("\n> Restoring the server build\n");
+run(isWindows ? "npm.cmd" : "npm", ["run", "build"], root);
+
 const sha256 = createHash("sha256").update(readFileSync(signed)).digest("hex");
 const mb = (statSync(signed).size / 1024 / 1024).toFixed(2);
 

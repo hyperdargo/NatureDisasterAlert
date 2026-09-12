@@ -24,6 +24,9 @@ COPY . .
 ARG NEXT_PUBLIC_SITE_URL=https://disasteralert.ankitgupta.com.np
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 ENV NEXT_TELEMETRY_DISABLED=1
+# Produces .next/standalone, which the runner stage copies. Left unset
+# everywhere else so "npm start" keeps working.
+ENV BUILD_STANDALONE=1
 RUN npm run build
 
 FROM node:24-alpine AS runner
