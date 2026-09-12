@@ -25,30 +25,55 @@ interface Advisory {
   }>;
   incidentsConsidered: number;
   unavailable?: boolean;
+  /** The server has no road data yet and is fetching it behind the request. */
+  warming?: boolean;
 }
 
 export function RoadAdvisory({ days }: { days: number }) {
   const [advisory, setAdvisory] = useState<Advisory | null>(null);
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
+    let retry: ReturnType<typeof setTimeout> | undefined;
 
-    const load = async () => {
+    const load = async (attempt: number) => {
       try {
-        const response = await fetch(apiUrl(`/api/roads?days=${days}`));
+        const response = await fetch(apiUrl(`/api/roads?days=${days}`), {
+          // A hard ceiling, so this panel can never sit on its loading state
+          // forever the way it used to.
+          signal: AbortSignal.timeout(20_000),
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = (await response.json()) as Advisory;
-        if (!cancelled) setAdvisory(data);
+        if (cancelled) return;
+
+        setAdvisory(data);
+
+        // The server fetches road data behind the request; check back once
+        // while it is still warming up.
+        if (data.warming && attempt < 2) {
+          retry = setTimeout(() => void load(attempt + 1), 15_000);
+          return;
+        }
+        setLoading(false);
       } catch (error) {
         console.error("road advisory failed:", error);
-      } finally {
-        if (!cancelled) setLoading(false);
+        if (cancelled) return;
+        if (attempt < 2) {
+          retry = setTimeout(() => void load(attempt + 1), 8_000);
+          return;
+        }
+        setFailed(true);
+        setLoading(false);
       }
     };
 
-    void load();
+    void load(0);
     return () => {
       cancelled = true;
+      clearTimeout(retry);
     };
   }, [days]);
 
@@ -93,7 +118,17 @@ export function RoadAdvisory({ days }: { days: number }) {
         </div>
 
         <div className="p-4">
-          {loading && <p className="text-sm text-ink-secondary">Checking roads</p>}
+          {loading && !failed && (
+            <p className="text-sm text-ink-secondary">Checking roads</p>
+          )}
+
+          {failed && (
+            <p className="text-sm text-ink-secondary">
+              Road information could not be loaded. The mapping service this
+              uses is often slow or busy. Traffic Police on 103 have the
+              current position either way.
+            </p>
+          )}
 
           {!loading && hasDamage && (
             <>
@@ -148,7 +183,7 @@ export function RoadAdvisory({ days }: { days: number }) {
             </>
           )}
 
-          {!loading && !hasRoads && !hasDamage && (
+          {!loading && !failed && !hasRoads && !hasDamage && (
             <p className="text-sm text-ink-secondary">
               No landslides or floods were reported near a mapped highway in this
               period.

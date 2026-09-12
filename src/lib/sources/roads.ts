@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { UpstreamError } from "../fetch-upstream";
+import { UpstreamError, describeError } from "../fetch-upstream";
 import type { DisasterEvent } from "../types";
 
 /**
@@ -63,6 +63,20 @@ const CLASS_RANK: Record<string, number> = {
 };
 
 let cache: { at: number; key: string; advisory: RoadAdvisory } | null = null;
+let inFlight: Promise<RoadAdvisory> | null = null;
+let lastAttemptAt = 0;
+
+/**
+ * Overpass is slow and sometimes unavailable: a query can take 45 seconds or
+ * simply hang. Blocking a request on it meant the Roads page sat on "Checking
+ * roads" indefinitely, which looks identical to a broken page.
+ *
+ * So nothing waits on Overpass any more. Whatever is cached is returned at
+ * once and a refresh runs behind the request, exactly as the news feed does.
+ * The first visitor after a cold start sees the empty state; a minute later
+ * the cache is warm and everyone else sees the roads.
+ */
+const MIN_ATTEMPT_GAP_MS = 2 * 60 * 1000;
 
 async function runOverpass(query: string): Promise<unknown> {
   let lastError: unknown = null;
@@ -98,6 +112,79 @@ function buildQuery(points: Array<{ lat: number; lon: number }>): string {
     )
     .join("\n");
   return `[out:json][timeout:40];\n(\n${clauses}\n);\nout tags 60;`;
+}
+
+/**
+ * Never blocks on Overpass. Returns what is known now and refreshes behind
+ * the caller.
+ */
+export function getRoadAdvisory(events: DisasterEvent[]): RoadAdvisory & { warming: boolean } {
+  // Infrastructure damage comes from the feed already in hand, so it is
+  // always current even when the road lookup has nothing yet.
+  const reportedDamage = events
+    .filter(
+      (event) =>
+        (event.casualties.roadsAffected ?? 0) > 0 ||
+        (event.casualties.bridgesAffected ?? 0) > 0,
+    )
+    .slice(0, 10)
+    .map((event) => ({
+      id: event.id,
+      title: event.title,
+      area: event.area?.district ?? event.place,
+      roads: event.casualties.roadsAffected ?? 0,
+      bridges: event.casualties.bridgesAffected ?? 0,
+    }));
+
+  const candidates = pickCandidates(events);
+  const key = candidates.map((event) => event.id).join(",");
+  const fresh = cache && cache.key === key && Date.now() - cache.at < CACHE_TTL_MS;
+
+  if (!fresh && candidates.length > 0) refreshInBackground(events, key);
+
+  if (cache) {
+    return { ...cache.advisory, reportedDamage, warming: false };
+  }
+
+  return {
+    roads: [],
+    districts: [
+      ...new Set(
+        candidates.map((e) => e.area?.district).filter((d): d is string => !!d),
+      ),
+    ],
+    reportedDamage,
+    incidentsConsidered: candidates.length,
+    // Tells the client a retry shortly is worth making.
+    warming: candidates.length > 0,
+  };
+}
+
+function pickCandidates(events: DisasterEvent[]): DisasterEvent[] {
+  return events
+    .filter((event) => event.inNepal)
+    .filter((event) => event.kind === "landslide" || event.kind === "flood")
+    .filter((event) => event.severity !== "good")
+    .slice(0, MAX_INCIDENTS);
+}
+
+function refreshInBackground(events: DisasterEvent[], key: string) {
+  if (inFlight) return;
+  if (Date.now() - lastAttemptAt < MIN_ATTEMPT_GAP_MS) return;
+
+  lastAttemptAt = Date.now();
+  inFlight = fetchRoadAdvisory(events)
+    .then((advisory) => {
+      cache = { at: Date.now(), key, advisory };
+      return advisory;
+    })
+    .catch((error) => {
+      console.error(`road advisory refresh failed: ${describeError(error)}`);
+      return cache?.advisory ?? { roads: [], districts: [], reportedDamage: [], incidentsConsidered: 0 };
+    })
+    .finally(() => {
+      inFlight = null;
+    });
 }
 
 export async function fetchRoadAdvisory(

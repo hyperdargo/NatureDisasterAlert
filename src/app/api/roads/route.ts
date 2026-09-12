@@ -4,7 +4,7 @@ import { describeError } from "@/lib/fetch-upstream";
 import { getFeed } from "@/lib/aggregate";
 import { parseQuery } from "@/lib/params";
 import { clientKeyFrom, rateLimit } from "@/lib/rate-limit";
-import { fetchRoadAdvisory } from "@/lib/sources/roads";
+import { getRoadAdvisory } from "@/lib/sources/roads";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,9 +21,19 @@ export async function GET(request: Request) {
 
   try {
     const feed = await getFeed(query.data.days);
-    const advisory = await fetchRoadAdvisory(feed.events.filter((e) => e.inNepal));
+    // Returns immediately. Overpass is refreshed behind the request, because
+    // it can take 45 seconds or hang, and a page that waits on it is
+    // indistinguishable from a broken one.
+    const advisory = getRoadAdvisory(feed.events.filter((e) => e.inNepal));
     return NextResponse.json(advisory, {
-      headers: { "cache-control": "public, s-maxage=3600, stale-while-revalidate=10800" },
+      headers: {
+        // Not cached while warming, or the empty first answer would be served
+        // to everyone for an hour.
+        "cache-control": advisory.warming
+          ? "no-store"
+          : "public, s-maxage=3600, stale-while-revalidate=10800",
+        ...corsHeaders(request),
+      },
     });
   } catch (error) {
     console.error(`road advisory failed: ${describeError(error)}`);
