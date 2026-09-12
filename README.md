@@ -78,6 +78,33 @@ database to breach. Beyond that:
 - The one lookup needing a position (nearby hospitals) rounds it to about 1 km
   before it leaves the browser, and stores nothing
 
+## Running with Docker
+
+```bash
+docker compose up -d --build   # then open http://localhost:3000
+```
+
+The container holds no state: all data is fetched live from the public feeds
+and cached in memory, so there is no volume to back up and restarting loses
+nothing. It runs as a non-root user on a read-only filesystem.
+
+Set `SITE_URL` when serving from a real hostname, or canonical tags, the
+sitemap and social cards will all point at localhost.
+
+## Deliberate omissions
+
+Three things commonly recommended for a "professional" site are absent on
+purpose:
+
+- **No analytics.** Not Google Analytics, not any other. The site tells every
+  visitor it does not track them, and the Content Security Policy enforces it.
+  Adding a tracker would make the privacy page a lie.
+- **No LocalBusiness schema.** This is not a business, has no address and sells
+  nothing. Declaring that markup to win a rich result would be structured-data
+  spam. It is marked up as a `WebApplication`, which is what it is.
+- **No case studies, testimonials or team photos.** Those belong on an agency
+  site. This is a public safety tool and the page has one job.
+
 ## Running locally
 
 ```bash

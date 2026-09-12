@@ -83,17 +83,26 @@ const env = {
   ANDROID_SDK_ROOT: ANDROID_HOME,
 };
 
-const run = (command, args, cwd) =>
-  execFileSync(command, args, { cwd, env, stdio: "inherit", shell: isWindows });
+/**
+ * `shell: true` is needed on Windows for .bat and .cmd wrappers, but it also
+ * means the command string is not quoted. An absolute path containing a space,
+ * such as "C:\Program Files\nodejs\node.exe", is then split at the
+ * space and fails. Anything invoked by absolute path runs without the shell.
+ */
+const run = (command, args, cwd, useShell = isWindows) =>
+  execFileSync(command, args, { cwd, env, stdio: "inherit", shell: useShell });
 
 console.log("\n> 1/5 Building the static interface\n");
-run(process.execPath, [join(root, "scripts", "build-app-shell.mjs")], root);
+run(process.execPath, [join(root, "scripts", "build-app-shell.mjs")], root, false);
 
 console.log("\n> 2/5 Copying it into the native project\n");
 run(isWindows ? "npx.cmd" : "npx", ["cap", "sync", "android"], root);
 
 console.log("\n> 3/5 Compiling\n");
-run(isWindows ? "gradlew.bat" : "./gradlew", ["assembleRelease", "--no-daemon"], nativeDir);
+// An absolute path: Windows does not resolve a bare "gradlew.bat" from the
+// working directory unless it is on PATH.
+const gradlew = join(nativeDir, isWindows ? "gradlew.bat" : "gradlew");
+run(gradlew, ["assembleRelease", "--no-daemon"], nativeDir);
 
 const releaseDir = join(nativeDir, "app", "build", "outputs", "apk", "release");
 const unsigned = join(releaseDir, "app-release-unsigned.apk");
@@ -102,7 +111,7 @@ if (!existsSync(unsigned)) fail(`Gradle produced no APK at ${unsigned}`);
 const aligned = join(releaseDir, "app-release-aligned.apk");
 console.log("\n> 4/5 Aligning\n");
 // -p page-aligns uncompressed native libraries; -f overwrites.
-run(zipalign, ["-p", "-f", "4", unsigned, aligned]);
+run(zipalign, ["-p", "-f", "4", unsigned, aligned], root, false);
 
 const outDir = join(root, "public", "app");
 mkdirSync(outDir, { recursive: true });

@@ -5,6 +5,7 @@ import { WINDOW_DAYS, loadFeedPayload } from "@/lib/feed-page";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/news" },
   title: "News",
   description:
     "Press coverage of disasters in Nepal, and hazards being tracked in other countries.",

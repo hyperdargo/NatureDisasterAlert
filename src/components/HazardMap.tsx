@@ -107,7 +107,45 @@ export function HazardMap({
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
 
+  /**
+   * Hold the 930 KB MapLibre bundle back until the map is actually on screen.
+   *
+   * The map sits below the proximity list and the headline figures, which are
+   * the parts that matter when someone opens this during an emergency.
+   * Downloading nearly a megabyte before "a landslide was reported 4 km away"
+   * can render is the wrong order, especially on a phone on a slow connection,
+   * which is exactly the situation this app exists for.
+   */
+  const [inView, setInView] = useState(false);
+
   useEffect(() => {
+    const element = container.current;
+    if (!element) return;
+
+    if (typeof IntersectionObserver === "undefined") {
+      // Ancient browser: load immediately rather than never. Deferred off the
+      // effect body so it does not cascade a second render before first paint.
+      const timer = setTimeout(() => setInView(true), 0);
+      return () => clearTimeout(timer);
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      // Start fetching slightly before it scrolls in, so the map is usually
+      // ready by the time it is looked at.
+      { rootMargin: "300px" },
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!inView) return;
     if (!container.current || map.current) return;
     let cancelled = false;
     let instance: MapLibreMap | null = null;
@@ -248,7 +286,7 @@ export function HazardMap({
       instance?.remove();
       map.current = null;
     };
-  }, []);
+  }, [inView]);
 
   // Push updates into the existing source rather than rebuilding layers.
   useEffect(() => {
@@ -299,7 +337,9 @@ export function HazardMap({
       <div ref={container} className="h-full w-full" />
       {!ready && (
         <div className="absolute inset-0 grid place-items-center bg-surface">
-          <p className="text-xs text-ink-muted">Loading map</p>
+          <p className="text-xs text-ink-muted">
+            {inView ? "Loading map" : "Map loads when you scroll to it"}
+          </p>
         </div>
       )}
     </div>

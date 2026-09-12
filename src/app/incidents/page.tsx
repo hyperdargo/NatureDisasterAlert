@@ -5,6 +5,7 @@ import { WINDOW_DAYS, loadFeedPayload } from "@/lib/feed-page";
 export const revalidate = 120;
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/incidents" },
   title: "Incident log",
   description:
     "Every hazard incident reported in Nepal in the last 30 days, with daily casualty trends and the worst-affected districts.",

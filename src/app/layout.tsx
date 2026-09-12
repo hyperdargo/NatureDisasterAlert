@@ -4,6 +4,8 @@ import { Geist, Geist_Mono, Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
 import { AppFrame } from "@/components/AppFrame";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
+import { SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/site";
+import { StructuredData } from "@/components/StructuredData";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -16,6 +18,10 @@ const notoDevanagari = Noto_Sans_Devanagari({
 });
 
 export const metadata: Metadata = {
+  // Makes every relative URL in metadata absolute, which canonical tags and
+  // social cards both require.
+  metadataBase: new URL(SITE_URL),
+  alternates: { canonical: "/" },
   title: {
     default: "Nature Disaster Alert by DTEmpire",
     template: "%s - Nature Disaster Alert",
@@ -37,7 +43,36 @@ export const metadata: Metadata = {
     // iOS ignores the manifest for the home-screen icon and uses this instead.
     apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
   },
-  robots: { index: true, follow: true },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
+  },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: "en_NP",
+    url: SITE_URL,
+    title: "Nature Disaster Alert by DTEmpire",
+    description:
+      "Live flood, landslide, earthquake and storm alerts for Nepal, with emergency numbers one tap away.",
+    images: [
+      {
+        url: absoluteUrl("/og-card.png"),
+        width: 1200,
+        height: 630,
+        alt: "Nature Disaster Alert: live hazard map for Nepal, drawing on BIPAD, USGS, GDACS and NASA EONET.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Nature Disaster Alert by DTEmpire",
+    description:
+      "Live flood, landslide and earthquake alerts for Nepal, free on Android and iPhone.",
+    images: [absoluteUrl("/og-card.png")],
+  },
+  category: "news",
   formatDetection: { telephone: false },
 };
 
@@ -64,6 +99,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         >
           Skip to content
         </a>
+        <StructuredData />
         <AppFrame>
           <SiteHeader />
           {/* Bottom padding clears the fixed tab bar and the emergency button

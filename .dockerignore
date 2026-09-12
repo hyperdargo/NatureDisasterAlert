@@ -1,0 +1,15 @@
+node_modules
+.next
+out
+android
+android-capacitor
+android-app-shell
+.git
+.github
+social-media
+*.log
+*.keystore
+signing-key.env
+.env
+.env.*
+README.md

@@ -128,6 +128,15 @@ export default nextConfig;
     throw new Error("next build produced no out/ directory");
   }
 
+  // The export copies everything in public/, which now includes the APK that
+  // the website offers for download. Left in place, each build would embed a
+  // copy of the previous APK inside the next one and the file would grow
+  // without bound. The packaged app has no use for its own installer.
+  rmSync(join(outDir, "app"), { recursive: true, force: true });
+  // Nor for the QR code and social card, which only serve the website.
+  rmSync(join(outDir, "install-qr.png"), { force: true });
+  rmSync(join(outDir, "og-card.png"), { force: true });
+
   rmSync(shellDir, { recursive: true, force: true });
   cpSync(outDir, shellDir, { recursive: true });
 

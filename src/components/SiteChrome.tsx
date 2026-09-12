@@ -95,7 +95,31 @@ export function SiteFooter({ sources }: { sources?: SourceId[] }) {
           </div>
         </div>
 
-        <p className="mt-8 max-w-prose border-t border-edge pt-5 text-xs text-ink-muted">
+        <nav aria-label="Site" className="mt-8 border-t border-edge pt-5">
+          <ul className="flex flex-wrap gap-x-5 gap-y-2">
+            {[
+              { href: "/", label: "Near me" },
+              { href: "/incidents", label: "Incident log" },
+              { href: "/news", label: "News" },
+              { href: "/roads", label: "Roads" },
+              { href: "/prepare", label: "What to do" },
+              { href: "/install", label: "Install" },
+              { href: "/faq", label: "Questions" },
+              { href: "/privacy", label: "Privacy" },
+            ].map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className="text-xs text-ink-secondary underline-offset-2 hover:text-ink hover:underline"
+                >
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <p className="mt-6 max-w-prose text-xs text-ink-muted">
           This site aggregates public hazard feeds and is not an official warning
           service. In an emergency, follow instructions from local authorities and
           the National Disaster Risk Reduction and Management Authority. Casualty

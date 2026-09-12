@@ -11,6 +11,7 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/install" },
   title: "Install the app",
   description:
     "Install Nature Disaster Alert on Android or iPhone. Free on both, with offline access and alerts for hazards near you.",

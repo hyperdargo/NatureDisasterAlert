@@ -37,6 +37,12 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  // Emits a self-contained server with only the modules actually imported,
+  // which is what the Docker image copies instead of all of node_modules.
+  output: "standalone",
+  // Source maps would ship the readable source of every component to any
+  // visitor who opens devtools, and roughly double the transferred bytes.
+  productionBrowserSourceMaps: false,
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

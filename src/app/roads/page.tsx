@@ -3,6 +3,7 @@ import { RoadAdvisory } from "@/components/RoadAdvisory";
 import { WINDOW_DAYS } from "@/lib/feed-page";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/roads" },
   title: "Roads",
   description:
     "Highways in Nepal with a landslide or flood reported nearby. Not a closure list.",

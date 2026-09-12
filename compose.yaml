@@ -1,0 +1,50 @@
+# Run the site with:
+#   docker compose up -d --build
+#
+# Then open http://localhost:3000
+#
+# The container holds no state. All data is fetched live from the public
+# upstream feeds and cached in memory, so restarting loses nothing and there is
+# no volume to back up.
+services:
+  web:
+    build:
+      context: .
+      args:
+        # Used for canonical URLs, the sitemap and social cards. Change this
+        # when serving from a different hostname or they will point at the
+        # wrong domain.
+        NEXT_PUBLIC_SITE_URL: ${SITE_URL:-http://localhost:3000}
+    image: nature-disaster-alert:latest
+    container_name: disaster-alert
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      # Optional. Set only if you have been granted a ReliefWeb appname.
+      RELIEFWEB_APPNAME: ${RELIEFWEB_APPNAME:-}
+    # The app makes outbound HTTPS calls to the hazard feeds and needs nothing
+    # inbound beyond the published port.
+    security_opt:
+      - no-new-privileges:true
+    # Everything it writes is temporary; the rest of the filesystem is sealed.
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/.next/cache
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/prepare').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

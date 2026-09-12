@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { EMERGENCY_NUMBERS } from "@/components/SiteChrome";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/prepare" },
   title: "What to do",
   description:
     "What to do during an earthquake, flood, landslide, lightning storm, fire or snakebite in Nepal, and how to prepare before the monsoon.",
