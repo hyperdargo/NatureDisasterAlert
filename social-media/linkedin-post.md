@@ -8,6 +8,7 @@ Two companion files:
   stronger post: specific bugs read better than a feature list.
 - `image-prompts.md` — prompts for generating your own diagram, in the plain
   boxes-and-arrows style.
+
 Written in first person so it can go up as-is. Every number and claim in here
 is true of the deployed build; if you change the app, change these too.
 
@@ -67,8 +68,8 @@ toll. Rather than quietly show a number that looks official and is wrong, the
 figures now say what they are and the app tells you to treat them as a floor.
 
 Built with Next.js, React, TypeScript, Tailwind and MapLibre GL. Hardened with
-a nonce-based Content Security Policy, validation on every upstream response,
-and rate limiting.
+a Content Security Policy, schema validation on every upstream response,
+timeouts and rate limiting.
 
 There is no account system, and that is deliberate. Distance to a hazard is
 calculated inside your browser, so the server is never told where you are.
@@ -146,8 +147,8 @@ system and no user table, so there is nothing to breach. The one lookup that
 needs a position, finding nearby hospitals, rounds it to about 1 km first and
 says so in the interface.
 
-Next.js, React, TypeScript, Tailwind, MapLibre GL, Zod. Nonce-based CSP,
-every upstream response schema-validated, timeouts and size caps on every
-outbound call, graceful degradation when a feed dies.
+Next.js, React, TypeScript, Tailwind, MapLibre GL, Zod. Content Security
+Policy, every upstream response schema-validated, timeouts and size caps on
+every outbound call, graceful degradation when a feed dies.
 
 #SoftwareEngineering #NextJS #TypeScript #DataEngineering #CivicTech #Nepal

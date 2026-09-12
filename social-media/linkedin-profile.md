@@ -90,8 +90,8 @@ What it does
 Engineering notes
 • Every upstream response is schema-validated; a dead feed degrades coverage
   rather than blanking the page
-• Nonce-based Content Security Policy, rate limiting, timeouts and size caps on
-  every outbound request
+• Content Security Policy, rate limiting, timeouts and size caps on every
+  outbound request
 • No user accounts and no personal data stored, so there is nothing to breach
 • Casualty counts are nullable end to end: "not reported" and 0 are different
   facts and are never conflated
@@ -114,8 +114,8 @@ If you list this under a role or as an independent project:
   municipality → district → province) for district-level impact reporting
 • Implemented location-aware alerting with proximity computed client-side, so
   no user location is transmitted or stored
-• Hardened the deployment with a nonce-based CSP, per-request validation of all
-  third-party data, rate limiting and graceful degradation
+• Hardened the deployment with a Content Security Policy, schema validation of
+  all third-party data, rate limiting and graceful degradation
 • Diagnosed and fixed a silent pagination defect that was truncating the
   reporting window and under-counting recorded casualties by roughly half
 • Packaged the application as an installable PWA and a signed Android APK
