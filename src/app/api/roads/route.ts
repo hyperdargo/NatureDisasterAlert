@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { corsHeaders, handleOptions } from "@/lib/cors";
 import { describeError } from "@/lib/fetch-upstream";
 import { getFeed } from "@/lib/aggregate";
 import { parseQuery } from "@/lib/params";
@@ -10,12 +11,12 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   if (!rateLimit(clientKeyFrom(request.headers)).ok) {
-    return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+    return NextResponse.json({ error: "Too many requests." }, { status: 429, headers: corsHeaders(request) });
   }
 
   const query = parseQuery(request.url);
   if (!query.success) {
-    return NextResponse.json({ error: "Invalid query parameters." }, { status: 400 });
+    return NextResponse.json({ error: "Invalid query parameters." }, { status: 400, headers: corsHeaders(request) });
   }
 
   try {
@@ -29,7 +30,12 @@ export async function GET(request: Request) {
     // Supplementary, and dangerous to guess at, so it simply stays empty.
     return NextResponse.json(
       { roads: [], districts: [], reportedDamage: [], incidentsConsidered: 0, unavailable: true },
-      { status: 200 },
+      { status: 200, headers: corsHeaders(request) },
     );
   }
+}
+
+/** Preflight for the packaged app, which calls this from its own origin. */
+export async function OPTIONS(request: Request) {
+  return handleOptions(request);
 }

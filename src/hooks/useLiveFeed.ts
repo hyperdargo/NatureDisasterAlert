@@ -15,6 +15,9 @@ export interface FeedPayload {
 
 const REFRESH_MS = 3 * 60 * 1000;
 
+/** Anything older than this on first render is refetched immediately. */
+const STALE_ON_MOUNT_MS = 60 * 1000;
+
 /**
  * The live feed, seeded from whatever the server rendered and refreshed in the
  * background.
@@ -62,6 +65,29 @@ export function useLiveFeed(initial: FeedPayload, days: number, live = true) {
       setRefreshing(false);
     }
   }, [days]);
+
+  /**
+   * Refresh on mount when the data we were handed is already old.
+   *
+   * On the website the server rendered moments ago, so this does nothing. In
+   * the packaged Android app the interface is compiled into the APK along with
+   * a snapshot taken at build time, which could be weeks stale by the time
+   * someone installs it. Without this the app would open showing figures from
+   * whenever the APK was built, which in a disaster app is the worst possible
+   * failure: confidently wrong, and no indication anything is amiss.
+   */
+  useEffect(() => {
+    const age = Date.now() - Date.parse(initial.generatedAt);
+    if (!Number.isNaN(age) && age <= STALE_ON_MOUNT_MS) return;
+
+    // Started on a timer rather than inline: refresh() flips loading state
+    // immediately, and doing that inside an effect body cascades a second
+    // render before the first has painted.
+    const timer = setTimeout(() => void refresh(), 0);
+    return () => clearTimeout(timer);
+    // Deliberately mount-only; later refreshes are handled below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!live) return;

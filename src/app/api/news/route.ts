@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { corsHeaders, handleOptions } from "@/lib/cors";
 import { getNews } from "@/lib/sources/news";
 import { clientKeyFrom, rateLimit } from "@/lib/rate-limit";
 
@@ -12,7 +13,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(request: Request) {
   if (!rateLimit(clientKeyFrom(request.headers)).ok) {
-    return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+    return NextResponse.json({ error: "Too many requests." }, { status: 429, headers: corsHeaders(request) });
   }
 
   const { articles, warming } = getNews();
@@ -26,4 +27,9 @@ export async function GET(request: Request) {
       },
     },
   );
+}
+
+/** Preflight for the packaged app, which calls this from its own origin. */
+export async function OPTIONS(request: Request) {
+  return handleOptions(request);
 }

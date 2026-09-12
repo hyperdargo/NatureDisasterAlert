@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { corsHeaders, handleOptions } from "@/lib/cors";
 import { describeError } from "@/lib/fetch-upstream";
 import { getFeed } from "@/lib/aggregate";
 import { parseQuery } from "@/lib/params";
@@ -27,7 +28,7 @@ export async function GET(request: Request) {
 
   const query = parseQuery(request.url);
   if (!query.success) {
-    return NextResponse.json({ error: "Invalid query parameters." }, { status: 400 });
+    return NextResponse.json({ error: "Invalid query parameters." }, { status: 400, headers: corsHeaders(request) });
   }
   const { days, scope } = query.data;
 
@@ -49,7 +50,12 @@ export async function GET(request: Request) {
     console.error(`feed failed: ${describeError(error)}`);
     return NextResponse.json(
       { error: "Live feed is temporarily unavailable." },
-      { status: 503 },
+      { status: 503, headers: corsHeaders(request) },
     );
   }
+}
+
+/** Preflight for the packaged app, which calls this from its own origin. */
+export async function OPTIONS(request: Request) {
+  return handleOptions(request);
 }

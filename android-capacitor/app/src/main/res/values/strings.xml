@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Disaster Alert</string>
+    <string name="title_activity_main">Disaster Alert</string>
+    <string name="package_name">np.com.ankitgupta.disasteralert</string>
+    <string name="custom_url_scheme">np.com.ankitgupta.disasteralert</string>
+</resources>

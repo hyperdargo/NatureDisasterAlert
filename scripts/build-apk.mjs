@@ -1,43 +1,44 @@
 /**
- * Build, align, sign and publish the Android APK.
+ * Build, sign and publish the Android APK.
  *
  *   npm run apk
  *
- * The output lands in public/app/nature-disaster-alert.apk, which is what the
- * download button on /install serves. That copy is the real distribution
- * channel: the GitHub repository is private, so release assets there return
- * 404 to anyone not signed in and cannot be linked to users.
+ * This produces the packaged app: the entire interface is compiled to static
+ * files and shipped inside the APK, so it opens from local storage rather than
+ * downloading the site on every launch. Only hazard data crosses the network,
+ * from the deployed site, because that data is live.
  *
- * Requires android/signing-key.env, which is deliberately not in the
- * repository. If you have lost it you cannot ship an upgrade to existing
- * installs; see the README.
+ * Steps: build the static shell, copy it into the native project, compile,
+ * align, sign, verify. The result lands in public/app/, which is the real
+ * distribution path because this repository is private and GitHub release
+ * assets on a private repository return 404 to anyone not signed in.
+ *
+ * Requires android-capacitor/../android/signing-key.env, which is deliberately
+ * not in the repository. Without the original key you cannot ship an upgrade
+ * to anyone who already installed the app.
  */
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  rmSync,
-  statSync,
-} from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const androidDir = join(root, "android");
+const nativeDir = join(root, "android-capacitor");
+const keysDir = join(root, "android");
 const home = process.env.USERPROFILE ?? process.env.HOME ?? "";
 
-const JAVA_HOME = process.env.JAVA_HOME_17 ?? join(home, ".bubblewrap", "jdk", "jdk-17.0.11+9");
+// Capacitor 8 compiles against Java 21; JDK 17 fails with
+// "invalid source release: 21".
+const JAVA_HOME =
+  process.env.JAVA_HOME_21 ?? join(home, ".bubblewrap", "jdk21", "jdk-21.0.12.1+1");
 const ANDROID_HOME = process.env.ANDROID_HOME ?? join(home, ".bubblewrap", "android_sdk");
 const BUILD_TOOLS = process.env.ANDROID_BUILD_TOOLS ?? "36.0.0";
 
 const isWindows = process.platform === "win32";
-const ext = isWindows ? ".bat" : "";
 const buildToolsDir = join(ANDROID_HOME, "build-tools", BUILD_TOOLS);
 const zipalign = join(buildToolsDir, isWindows ? "zipalign.exe" : "zipalign");
-const apksigner = join(buildToolsDir, `apksigner${ext}`);
+const apksigner = join(buildToolsDir, `apksigner${isWindows ? ".bat" : ""}`);
 
 function fail(message) {
   console.error(`\n  ${message}\n`);
@@ -45,9 +46,14 @@ function fail(message) {
 }
 
 if (!existsSync(JAVA_HOME)) fail(`JDK 17 not found at ${JAVA_HOME}. Set JAVA_HOME_17.`);
-if (!existsSync(buildToolsDir)) fail(`Android build-tools ${BUILD_TOOLS} not found at ${buildToolsDir}.`);
+if (!existsSync(buildToolsDir)) {
+  fail(`Android build-tools ${BUILD_TOOLS} not found at ${buildToolsDir}.`);
+}
+if (!existsSync(nativeDir)) {
+  fail("android-capacitor/ is missing. Run: npx cap add android");
+}
 
-const envPath = join(androidDir, "signing-key.env");
+const envPath = join(keysDir, "signing-key.env");
 if (!existsSync(envPath)) {
   fail(
     "android/signing-key.env is missing. It holds the keystore password and is " +
@@ -66,7 +72,6 @@ const signing = Object.fromEntries(
       return [line.slice(0, at), line.slice(at + 1)];
     }),
 );
-
 for (const key of ["KEYSTORE_PASSWORD", "KEY_PASSWORD", "KEY_ALIAS"]) {
   if (!signing[key]) fail(`${key} missing from android/signing-key.env`);
 }
@@ -81,26 +86,32 @@ const env = {
 const run = (command, args, cwd) =>
   execFileSync(command, args, { cwd, env, stdio: "inherit", shell: isWindows });
 
-console.log("\n> Building release APK\n");
-run(isWindows ? "gradlew.bat" : "./gradlew", ["assembleRelease", "--no-daemon"], androidDir);
+console.log("\n> 1/5 Building the static interface\n");
+run(process.execPath, [join(root, "scripts", "build-app-shell.mjs")], root);
 
-const releaseDir = join(androidDir, "app", "build", "outputs", "apk", "release");
+console.log("\n> 2/5 Copying it into the native project\n");
+run(isWindows ? "npx.cmd" : "npx", ["cap", "sync", "android"], root);
+
+console.log("\n> 3/5 Compiling\n");
+run(isWindows ? "gradlew.bat" : "./gradlew", ["assembleRelease", "--no-daemon"], nativeDir);
+
+const releaseDir = join(nativeDir, "app", "build", "outputs", "apk", "release");
 const unsigned = join(releaseDir, "app-release-unsigned.apk");
-const aligned = join(releaseDir, "app-release-aligned.apk");
 if (!existsSync(unsigned)) fail(`Gradle produced no APK at ${unsigned}`);
 
-console.log("\n> Aligning\n");
-// -p aligns uncompressed .so files to the page boundary; -f overwrites.
+const aligned = join(releaseDir, "app-release-aligned.apk");
+console.log("\n> 4/5 Aligning\n");
+// -p page-aligns uncompressed native libraries; -f overwrites.
 run(zipalign, ["-p", "-f", "4", unsigned, aligned]);
 
 const outDir = join(root, "public", "app");
 mkdirSync(outDir, { recursive: true });
 const signed = join(outDir, "nature-disaster-alert.apk");
 
-console.log("\n> Signing\n");
+console.log("\n> 5/5 Signing\n");
 run(apksigner, [
   "sign",
-  "--ks", join(androidDir, "android.keystore"),
+  "--ks", join(keysDir, "android.keystore"),
   "--ks-key-alias", signing.KEY_ALIAS,
   "--ks-pass", `pass:${signing.KEYSTORE_PASSWORD}`,
   "--key-pass", `pass:${signing.KEY_PASSWORD}`,
@@ -108,15 +119,13 @@ run(apksigner, [
   aligned,
 ]);
 
-// apksigner writes a .idsig sidecar that is not needed to install.
+// apksigner leaves a .idsig sidecar that is not needed to install.
 const idsig = `${signed}.idsig`;
 if (existsSync(idsig)) rmSync(idsig);
 
-console.log("\n> Verifying\n");
 run(apksigner, ["verify", "--print-certs", signed]);
 
-const bytes = readFileSync(signed);
-const sha256 = createHash("sha256").update(bytes).digest("hex");
+const sha256 = createHash("sha256").update(readFileSync(signed)).digest("hex");
 const mb = (statSync(signed).size / 1024 / 1024).toFixed(2);
 
 console.log(`
@@ -124,5 +133,5 @@ console.log(`
   Size   ${mb} MB
   SHA256 ${sha256}
 
-  Deploy the site for the download link on /install to serve this build.
+  Deploy the site so /install serves this build.
 `);
