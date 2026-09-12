@@ -117,12 +117,16 @@ The APK is a Trusted Web Activity: a thin native shell around the live site, so
 the site must be deployed for it to work.
 
 ```bash
-cd android
-export JAVA_HOME=~/.bubblewrap/jdk/jdk-17.0.11+9
-export ANDROID_HOME=~/.bubblewrap/android_sdk
-./gradlew assembleRelease
-# then sign with apksigner using android.keystore
+npm run apk
 ```
+
+That builds, aligns, signs and verifies in one step, writing the result to
+`public/app/nature-disaster-alert.apk` and printing its SHA-256.
+
+**Where users actually download it.** `public/app/` is the real distribution
+path, because this repository is private and GitHub release assets on a private
+repository return 404 to anyone who is not signed in. Releases here are a
+versioned archive, not a download link you can share.
 
 `android/android.keystore` and `android/signing-key.env` are **not** in this
 repository and must not be. Anyone holding them can publish an update Android

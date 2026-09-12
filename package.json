@@ -10,7 +10,8 @@
     "sync:maplibre": "node scripts/sync-maplibre-worker.mjs",
     "prebuild": "node scripts/sync-maplibre-worker.mjs",
     "predev": "node scripts/sync-maplibre-worker.mjs",
-    "postinstall": "node scripts/sync-maplibre-worker.mjs"
+    "postinstall": "node scripts/sync-maplibre-worker.mjs",
+    "apk": "node scripts/build-apk.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
