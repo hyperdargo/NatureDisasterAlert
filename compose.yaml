@@ -27,6 +27,13 @@ services:
       - "${PORT:-4321}:3000"
     environment:
       NODE_ENV: production
+      # Pinned, and deliberately not derived from ${PORT}. The container always
+      # listens on 3000; PORT only chooses the host port in the mapping above.
+      # Letting one variable drive both meant a PORT in the shell or a .env
+      # file changed the port the app listened on while the mapping still
+      # pointed at 3000, so nothing answered and the healthcheck never passed.
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
       # Optional. Set only if you have been granted a ReliefWeb appname.
       RELIEFWEB_APPNAME: ${RELIEFWEB_APPNAME:-}
     # The app makes outbound HTTPS calls to the hazard feeds and needs nothing
