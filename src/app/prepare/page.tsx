@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { EMERGENCY_NUMBERS, SiteFooter, SiteHeader } from "@/components/SiteChrome";
+import { EMERGENCY_NUMBERS } from "@/components/SiteChrome";
 
 export const metadata: Metadata = {
   title: "What to do",
@@ -130,8 +130,6 @@ const KIT = [
 export default function PreparePage() {
   return (
     <>
-      <SiteHeader />
-      <main id="main" className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-8 sm:px-6">
         <div className="max-w-2xl">
           <h1 className="text-2xl leading-tight font-medium tracking-tight text-ink sm:text-3xl">
             What to do
@@ -230,8 +228,6 @@ export default function PreparePage() {
             ))}
           </ul>
         </section>
-      </main>
-      <SiteFooter />
     </>
   );
 }

@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
+import { AppFrame } from "@/components/AppFrame";
+import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -62,7 +64,18 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         >
           Skip to content
         </a>
-        {children}
+        <AppFrame>
+          <SiteHeader />
+          {/* Bottom padding clears the fixed tab bar and the emergency button
+              on phones; on wider screens neither is present. */}
+          <main
+            id="main"
+            className="mx-auto w-full max-w-[1400px] flex-1 px-4 pt-6 pb-32 sm:px-6 md:pb-10"
+          >
+            {children}
+          </main>
+          <SiteFooter />
+        </AppFrame>
       </body>
     </html>
   );

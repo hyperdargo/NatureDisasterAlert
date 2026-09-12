@@ -9,6 +9,7 @@ import {
   X,
 } from "@phosphor-icons/react/dist/ssr";
 import { coarsenForLookup } from "@/lib/coarsen";
+import { apiUrl } from "@/lib/api-base";
 import {
   ORGANISATIONS,
   SHORT_CODES,
@@ -68,7 +69,7 @@ export function EmergencySheet({ coords }: { coords: Coords | null }) {
 
     setState("loading");
     try {
-      const response = await fetch(`/api/services?lat=${lat}&lon=${lon}`);
+      const response = await fetch(apiUrl(`/api/services?lat=${lat}&lon=${lon}`));
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = (await response.json()) as {
         services: EmergencyService[];
@@ -105,7 +106,9 @@ export function EmergencySheet({ coords }: { coords: Coords | null }) {
         type="button"
         onClick={openSheet}
         aria-haspopup="dialog"
-        className="fixed right-4 bottom-4 z-40 flex min-h-14 items-center gap-2 rounded-full px-5 text-sm font-medium text-white shadow-lg transition-transform active:translate-y-px sm:right-6 sm:bottom-6"
+        // Sits above the tab bar on phones, and at the corner on wider screens
+        // where no tab bar exists.
+        className="fixed right-4 bottom-20 z-40 flex min-h-14 items-center gap-2 rounded-full px-5 text-sm font-medium text-white shadow-lg transition-transform active:translate-y-px md:right-6 md:bottom-6"
         style={{
           background: "var(--status-critical)",
           // Clear of the iOS home indicator when installed to the home screen.

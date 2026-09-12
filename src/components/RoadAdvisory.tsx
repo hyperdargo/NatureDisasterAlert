@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { apiUrl } from "@/lib/api-base";
 import { Path, Phone, Warning } from "@phosphor-icons/react/dist/ssr";
 
 /**
@@ -35,7 +36,7 @@ export function RoadAdvisory({ days }: { days: number }) {
 
     const load = async () => {
       try {
-        const response = await fetch(`/api/roads?days=${days}`);
+        const response = await fetch(apiUrl(`/api/roads?days=${days}`));
         const data = (await response.json()) as Advisory;
         if (!cancelled) setAdvisory(data);
       } catch (error) {

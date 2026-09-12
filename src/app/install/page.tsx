@@ -9,7 +9,6 @@ import {
   PlusSquare,
   WifiSlash,
 } from "@phosphor-icons/react/dist/ssr";
-import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 
 export const metadata: Metadata = {
   title: "Install the app",
@@ -45,8 +44,6 @@ const IOS_STEPS = [
 export default function InstallPage() {
   return (
     <>
-      <SiteHeader />
-      <main id="main" className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-8 sm:px-6">
         <div className="max-w-2xl">
           <h1 className="text-2xl leading-tight font-medium tracking-tight text-ink sm:text-3xl">
             Install the app
@@ -188,8 +185,6 @@ export default function InstallPage() {
             <ArrowSquareOut size={13} aria-hidden />
           </Link>
         </section>
-      </main>
-      <SiteFooter />
     </>
   );
 }

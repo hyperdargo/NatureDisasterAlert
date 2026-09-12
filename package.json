@@ -8,10 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "sync:maplibre": "node scripts/sync-maplibre-worker.mjs",
-    "prebuild": "node scripts/sync-maplibre-worker.mjs",
+    "prebuild": "node scripts/sync-maplibre-worker.mjs && node scripts/generate-qr.mjs",
     "predev": "node scripts/sync-maplibre-worker.mjs",
     "postinstall": "node scripts/sync-maplibre-worker.mjs",
-    "apk": "node scripts/build-apk.mjs"
+    "apk": "node scripts/build-apk.mjs",
+    "generate:qr": "node scripts/generate-qr.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
@@ -29,6 +30,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
+    "qrcode": "^1.5.4",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

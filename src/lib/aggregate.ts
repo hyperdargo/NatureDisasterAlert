@@ -74,7 +74,45 @@ function dedupe(events: DisasterEvent[]): DisasterEvent[] {
   return kept;
 }
 
+/**
+ * In-process memo for the assembled feed.
+ *
+ * Next's own fetch cache cannot help here: the BIPAD page is nearly 3 MB and
+ * the data cache refuses anything over 2 MB, so every render was re-fetching
+ * the whole window. With five tabs each rendering server-side that meant five
+ * full pulls of the same data. This keeps one assembled result per window for
+ * a short time, shared by every page render in the process.
+ *
+ * Deliberately short: this is live hazard data, and a minute of staleness is
+ * the most that is acceptable.
+ */
+const FEED_TTL_MS = 60_000;
+
+const feedCache = new Map<number, { at: number; feed: Feed }>();
+const feedInFlight = new Map<number, Promise<Feed>>();
+
 export async function getFeed(days: number): Promise<Feed> {
+  const cached = feedCache.get(days);
+  if (cached && Date.now() - cached.at < FEED_TTL_MS) return cached.feed;
+
+  // Collapse concurrent renders onto one upstream pull.
+  const existing = feedInFlight.get(days);
+  if (existing) return existing;
+
+  const pending = buildFeed(days)
+    .then((feed) => {
+      feedCache.set(days, { at: Date.now(), feed });
+      return feed;
+    })
+    .finally(() => {
+      feedInFlight.delete(days);
+    });
+
+  feedInFlight.set(days, pending);
+  return pending;
+}
+
+async function buildFeed(days: number): Promise<Feed> {
   const sinceIso = new Date(Date.now() - days * 86_400_000).toISOString();
 
   const { events, failed } = await gatherSources<DisasterEvent>([

@@ -34,25 +34,26 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <nav className="ml-auto flex items-center gap-1 text-sm" aria-label="Main">
-          <Link
-            href="/"
-            className="rounded px-2.5 py-1.5 text-ink-secondary transition-colors hover:text-ink"
-          >
-            Live
-          </Link>
-          <Link
-            href="/prepare"
-            className="rounded px-2.5 py-1.5 text-ink-secondary transition-colors hover:text-ink"
-          >
-            Prepare
-          </Link>
-          <Link
-            href="/install"
-            className="rounded px-2.5 py-1.5 text-ink-secondary transition-colors hover:text-ink"
-          >
-            Install
-          </Link>
+        <nav
+          className="ml-auto hidden items-center gap-0.5 text-sm md:flex"
+          aria-label="Main"
+        >
+          {[
+            { href: "/", label: "Near me" },
+            { href: "/incidents", label: "Incidents" },
+            { href: "/news", label: "News" },
+            { href: "/roads", label: "Roads" },
+            { href: "/prepare", label: "Prepare" },
+            { href: "/install", label: "Install" },
+          ].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="rounded px-2.5 py-1.5 text-ink-secondary transition-colors hover:text-ink"
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
       </div>
     </header>

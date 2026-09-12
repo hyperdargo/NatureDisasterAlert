@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ArrowSquareOut, Newspaper } from "@phosphor-icons/react/dist/ssr";
 import { relativeTime } from "@/lib/display";
+import { apiUrl } from "@/lib/api-base";
 
 /**
  * Press coverage of Nepal disasters.
@@ -32,7 +33,7 @@ export function NewsFeed({ now }: { now: number }) {
 
     const load = async (attempt: number) => {
       try {
-        const response = await fetch("/api/news");
+        const response = await fetch(apiUrl("/api/news"));
         const data = (await response.json()) as {
           articles?: NewsArticle[];
           warming?: boolean;
