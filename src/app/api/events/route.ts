@@ -21,7 +21,12 @@ export async function GET(request: Request) {
       { error: "Too many requests." },
       {
         status: 429,
-        headers: { "retry-after": String(Math.ceil((limit.resetAt - Date.now()) / 1000)) },
+        headers: {
+          "retry-after": String(Math.ceil((limit.resetAt - Date.now()) / 1000)),
+          // Even an error needs CORS, or the app sees an opaque network
+          // failure instead of the reason it was refused.
+          ...corsHeaders(request),
+        },
       },
     );
   }
@@ -43,6 +48,10 @@ export async function GET(request: Request) {
         headers: {
           // Serve instantly from the edge, refresh in the background.
           "cache-control": "public, s-maxage=120, stale-while-revalidate=600",
+          // Without this the packaged app cannot read the response at all:
+          // the browser fetches it, then blocks it, and the app shows an
+          // empty map and "no hazards near you".
+          ...corsHeaders(request),
         },
       },
     );

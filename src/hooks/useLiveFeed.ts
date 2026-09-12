@@ -45,6 +45,18 @@ export function useLiveFeed(initial: FeedPayload, days: number, live = true) {
   // A single hiccup is not worth announcing; the feed is polled every few
   // minutes and the server is served stale-while-revalidate behind it.
   const failures = useRef(0);
+  /**
+   * The last failure message, shown in the interface rather than only logged.
+   * A phone has no console to open, so a silent failure there is
+   * undiagnosable: the app just sits there looking empty.
+   */
+  const [lastError, setLastError] = useState<string | null>(null);
+  /**
+   * Whether anything has loaded yet, held in a ref rather than read from
+   * state inside refresh(). Depending on `data` there would rebuild the
+   * callback on every update and restart the polling interval each time.
+   */
+  const hasNoData = useRef(initial.pending ?? false);
 
   const refresh = useCallback(async () => {
     setRefreshing(true);
@@ -71,14 +83,19 @@ export function useLiveFeed(initial: FeedPayload, days: number, live = true) {
         generatedAt: eventsJson.generatedAt,
       });
       failures.current = 0;
+      hasNoData.current = false;
+      setLastError(null);
       // The service worker marks a cached reply, so staleness is stated
       // rather than implied.
       setProblem(eventsRes.headers.get("x-from-cache") === "1" ? "offline" : "none");
     } catch (error) {
       console.error(error);
       failures.current += 1;
-      // Announce only after two consecutive failures, and say which kind.
-      if (failures.current >= 2) {
+      setLastError(error instanceof Error ? error.message : String(error));
+      // With no data on screen there is nothing to protect, so the first
+      // failure is reported at once. Once data is showing, a single hiccup is
+      // not worth announcing and two consecutive failures are required.
+      if (failures.current >= 2 || hasNoData.current) {
         setProblem(
           typeof navigator !== "undefined" && navigator.onLine === false
             ? "offline"
@@ -138,5 +155,5 @@ export function useLiveFeed(initial: FeedPayload, days: number, live = true) {
     return () => window.removeEventListener("online", onOnline);
   }, [refresh]);
 
-  return { data, refresh, refreshing, problem };
+  return { data, refresh, refreshing, problem, lastError };
 }

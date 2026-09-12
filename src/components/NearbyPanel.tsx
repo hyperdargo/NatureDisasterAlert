@@ -6,6 +6,7 @@ import {
   BellSlash,
   CheckCircle,
   Crosshair,
+  Question,
   MapPin,
   ShieldCheck,
 } from "@phosphor-icons/react/dist/ssr";
@@ -59,6 +60,8 @@ export function NearbyPanel({
   onAllow,
   onDecline,
   now,
+  dataPending = false,
+  dataProblem = "none",
 }: {
   events: DisasterEvent[];
   status: LocationStatus;
@@ -71,6 +74,10 @@ export function NearbyPanel({
   onAllow: () => void;
   onDecline: () => void;
   now: number;
+  /** No hazard data has arrived yet. */
+  dataPending?: boolean;
+  /** The last refresh failed, so what is on screen may be incomplete. */
+  dataProblem?: "none" | "offline" | "unreachable";
 }) {
   const nearby = useMemo(
     () => (coords ? selectNearby(events, coords, radiusKm) : []),
@@ -156,13 +163,29 @@ export function NearbyPanel({
   const gravest = nearby[0];
   const clear = nearby.length === 0;
 
+  /**
+   * An empty list means one of two very different things, and the difference
+   * matters more here than anywhere else in the app: either nothing has been
+   * reported near you, or no data arrived and we do not know.
+   *
+   * This panel used to say "No active hazards near you" for both. Telling
+   * someone they are safe when the fetch simply failed is the worst thing this
+   * interface can do, so an empty list with no data behind it now says exactly
+   * that instead.
+   */
+  const dataUnknown = dataPending || (clear && dataProblem !== "none");
+
   return (
     <section
       className="overflow-hidden rounded-lg border bg-surface"
       style={{
         // The panel border carries the gravest nearby level, so the status is
         // legible before a single word is read.
-        borderColor: clear ? "var(--border)" : SEVERITY_STYLE[gravest.severity].token,
+        borderColor: dataUnknown
+          ? "var(--status-warning)"
+          : clear
+            ? "var(--border)"
+            : SEVERITY_STYLE[gravest.severity].token,
       }}
       aria-live="polite"
     >
@@ -190,7 +213,21 @@ export function NearbyPanel({
         </div>
       </div>
 
-      {clear ? (
+      {dataUnknown ? (
+        <div className="flex items-start gap-3 p-5">
+          <Question size={22} weight="fill" className="mt-px shrink-0 text-warning" aria-hidden />
+          <div>
+            <p className="text-base font-medium text-ink">
+              {dataPending ? "Checking for hazards near you" : "Cannot check right now"}
+            </p>
+            <p className="mt-1 text-sm text-ink-secondary">
+              {dataPending
+                ? "Loading the latest reports."
+                : "The latest reports could not be loaded, so this is not a clear signal. Do not read it as an all clear."}
+            </p>
+          </div>
+        </div>
+      ) : clear ? (
         <div className="flex items-start gap-3 p-5">
           <CheckCircle size={22} weight="fill" className="mt-px shrink-0 text-good" aria-hidden />
           <div>

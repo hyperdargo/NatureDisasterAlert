@@ -56,8 +56,12 @@ export function usePwa() {
     if (!("serviceWorker" in navigator)) return;
     // Registered after load so it never competes with first paint.
     const register = () => {
+      // The query string is what makes the browser treat this as a new
+      // worker after a deploy, which in turn drops the previous build's
+      // caches. Without it an updated app can keep running old code.
+      const buildId = process.env.NEXT_PUBLIC_BUILD_ID ?? "dev";
       navigator.serviceWorker
-        .register("/sw.js", { scope: "/" })
+        .register(`/sw.js?v=${encodeURIComponent(buildId)}`, { scope: "/" })
         .catch((error) => console.error("service worker registration failed:", error));
     };
     if (document.readyState === "complete") register();

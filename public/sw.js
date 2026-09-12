@@ -8,8 +8,18 @@
  * emergency would be worse than showing nothing. Responses served from cache
  * carry an x-from-cache header so the interface can say so out loud.
  */
-const SHELL_CACHE = "shell-v1";
-const DATA_CACHE = "data-v1";
+/**
+ * Cache names carry the build id, passed in the registration URL as ?v=.
+ *
+ * They used to be fixed strings, so the caches were never invalidated. On the
+ * web that merely served stale assets; in the installed Android app it was
+ * worse, because WebView storage survives an APK upgrade, so the app kept
+ * running the previous build's JavaScript after updating. Anything keyed on an
+ * old build is deleted on activate.
+ */
+const BUILD = new URL(self.location.href).searchParams.get("v") || "dev";
+const SHELL_CACHE = `shell-${BUILD}`;
+const DATA_CACHE = `data-${BUILD}`;
 
 const SHELL_ASSETS = ["/", "/prepare", "/manifest.webmanifest", "/icon-192.png"];
 

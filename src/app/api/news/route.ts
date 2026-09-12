@@ -24,6 +24,7 @@ export async function GET(request: Request) {
         "cache-control": warming
           ? "no-store"
           : "public, s-maxage=900, stale-while-revalidate=3600",
+        ...corsHeaders(request),
       },
     },
   );

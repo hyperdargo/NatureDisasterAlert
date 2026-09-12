@@ -34,7 +34,18 @@ const securityHeaders = [
   { key: "x-dns-prefetch-control", value: "off" },
 ];
 
+/**
+ * Changes on every build, and is used to name the service worker caches.
+ *
+ * The caches were previously called "shell-v1" forever. A browser, and more
+ * importantly an installed Android app, therefore kept serving the previous
+ * build's JavaScript from cache after an update, because WebView storage
+ * survives an APK upgrade. The app looked updated and ran old code.
+ */
+const BUILD_ID = process.env.BUILD_ID ?? Date.now().toString(36);
+
 const nextConfig: NextConfig = {
+  env: { NEXT_PUBLIC_BUILD_ID: BUILD_ID },
   poweredByHeader: false,
   reactStrictMode: true,
   // Opt-in, because "next start" refuses to run against a standalone build.

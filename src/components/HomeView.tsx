@@ -57,7 +57,7 @@ export function HomeView({
   radiusKm: number;
   onRadiusChange: (km: number) => void;
 }) {
-  const { data, refresh, refreshing, problem } = useLiveFeed(initial, days, true);
+  const { data, refresh, refreshing, problem, lastError } = useLiveFeed(initial, days, true);
   const location = useLocation();
   const alerts = useLocalAlerts();
   const notifiedFor = useRef<Set<string>>(new Set());
@@ -102,8 +102,15 @@ export function HomeView({
             {problem === "offline"
               ? "You are offline. These figures are from the last successful update and may be out of date."
               : problem === "unreachable"
-                ? "Could not reach the server for the latest update, so these figures may be a few minutes old. Retrying automatically."
+                ? data.pending
+                  ? "Could not load hazard data. Check your connection, then use Retry below."
+                  : "Could not reach the server for the latest update, so these figures may be a few minutes old. Retrying automatically."
                 : `Some sources did not respond this cycle (${data.degraded.join(", ")}). Coverage may be incomplete.`}
+            {/* On a phone there is no console to open, so the reason is shown
+                rather than only logged. */}
+            {lastError && data.pending && (
+              <span className="mt-1 block text-ink-muted">{lastError}</span>
+            )}
           </span>
         </p>
       )}
@@ -120,6 +127,8 @@ export function HomeView({
         onAllow={location.allow}
         onDecline={location.decline}
         now={now}
+        dataPending={data.pending ?? false}
+        dataProblem={problem}
       />
 
       <div className="flex flex-wrap items-center gap-2">
@@ -133,9 +142,17 @@ export function HomeView({
           type="button"
           onClick={() => void refresh()}
           disabled={refreshing}
-          className="ml-auto text-xs text-ink-muted transition-colors hover:text-ink-secondary disabled:opacity-60"
+          className={
+            data.pending
+              ? "ml-auto rounded border border-edge-strong px-3 py-1.5 text-xs text-ink transition-colors disabled:opacity-60"
+              : "ml-auto text-xs text-ink-muted transition-colors hover:text-ink-secondary disabled:opacity-60"
+          }
         >
-          {refreshing ? "Refreshing" : `Updated ${relativeTime(data.generatedAt, now)}`}
+          {refreshing
+            ? "Refreshing"
+            : data.pending
+              ? "Retry"
+              : `Updated ${relativeTime(data.generatedAt, now)}`}
         </button>
       </div>
 
