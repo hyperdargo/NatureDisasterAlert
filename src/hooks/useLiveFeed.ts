@@ -11,6 +11,12 @@ export interface FeedPayload {
   stats: Stats;
   degraded: string[];
   generatedAt: string;
+  /**
+   * True when the server sent no data at all, which happens only in the
+   * packaged app. The interface shows a loading state rather than a screen of
+   * zeros, because "0 died" and "not loaded yet" must never look the same.
+   */
+  pending?: boolean;
 }
 
 const REFRESH_MS = 3 * 60 * 1000;
@@ -48,6 +54,7 @@ export function useLiveFeed(initial: FeedPayload, days: number, live = true) {
       const statsJson = (await statsRes.json()) as Stats;
 
       setData({
+        pending: false,
         nepal: eventsJson.events.filter((event) => event.inNepal),
         global: eventsJson.events.filter((event) => !event.inNepal),
         stats: statsJson,

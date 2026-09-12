@@ -113,7 +113,11 @@ console.log("\n> 4/5 Aligning\n");
 // -p page-aligns uncompressed native libraries; -f overwrites.
 run(zipalign, ["-p", "-f", "4", unsigned, aligned], root, false);
 
-const outDir = join(root, "public", "app");
+// Written to dist/ rather than public/: the APK is distributed from the
+// depot and attached to GitHub releases, not served by this site. Keeping it
+// out of public/ also stops the static export embedding the APK inside the
+// next APK.
+const outDir = join(root, "dist");
 mkdirSync(outDir, { recursive: true });
 const signed = join(outDir, "nature-disaster-alert.apk");
 
@@ -138,9 +142,10 @@ const sha256 = createHash("sha256").update(readFileSync(signed)).digest("hex");
 const mb = (statSync(signed).size / 1024 / 1024).toFixed(2);
 
 console.log(`
-  Built  public/app/nature-disaster-alert.apk
+  Built  dist/nature-disaster-alert.apk
   Size   ${mb} MB
   SHA256 ${sha256}
 
-  Deploy the site so /install serves this build.
+  Upload it to the depot so /install points at this build:
+  https://depot.ankitgupta.com.np
 `);

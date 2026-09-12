@@ -32,6 +32,13 @@ const config: CapacitorConfig = {
   },
 
   plugins: {
+    StatusBar: {
+      // The WebView must not draw underneath the status bar. Without this the
+      // app header sits behind the clock, battery and signal icons.
+      overlaysWebView: false,
+      style: "DARK",
+      backgroundColor: "#0D0D0D",
+    },
     SplashScreen: {
       launchShowDuration: 600,
       backgroundColor: "#0D0D0D",

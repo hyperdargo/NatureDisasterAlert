@@ -12,6 +12,21 @@ export const SITE_NAME = "Nature Disaster Alert";
 export const SITE_TAGLINE = "by DTEmpire";
 export const AUTHOR = "Ankit Gupta";
 
+/**
+ * Where the Android APK is downloaded from.
+ *
+ * Hosted on a separate file service rather than served from this site, so a
+ * 6MB binary is not sitting in the web deployment and the download does not
+ * compete with the app itself for bandwidth during an emergency.
+ *
+ * It is an external page rather than a direct file, which is deliberate: the
+ * reader sees the filename and size before anything downloads, which is the
+ * right way round for an app installed outside the Play Store.
+ */
+export const APK_DOWNLOAD_URL =
+  process.env.NEXT_PUBLIC_APK_URL ??
+  "https://depot.ankitgupta.com.np/index.php/s/2Nc7dCxzoGT7wNs";
+
 export function absoluteUrl(path: string): string {
   return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }

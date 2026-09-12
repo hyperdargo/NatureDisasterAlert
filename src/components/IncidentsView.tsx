@@ -28,6 +28,21 @@ export function IncidentsView({
   // matches on both sides and relative stamps age on their own.
   const now = useNow(Date.parse(data.generatedAt));
 
+
+  if (data.pending) {
+    return (
+      <div className="space-y-4" role="status" aria-live="polite">
+        <p className="text-sm text-ink-secondary">Loading the latest reports</p>
+        {[0, 1, 2].map((key) => (
+          <div
+            key={key}
+            className="h-24 animate-pulse rounded-lg border border-edge bg-surface"
+          />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 sm:space-y-8">
       <StatTiles totals={data.stats.totals} days={days} />

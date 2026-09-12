@@ -11,7 +11,7 @@
 const SHELL_CACHE = "shell-v1";
 const DATA_CACHE = "data-v1";
 
-const SHELL_ASSETS = ["/", "/prepare", "/manifest.webmanifest", "/icon.svg"];
+const SHELL_ASSETS = ["/", "/prepare", "/manifest.webmanifest", "/icon-192.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

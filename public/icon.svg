@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Nature Disaster Alert">
-  <rect width="512" height="512" rx="112" fill="#0d0d0d"/>
-  <path d="M256 92 L436 404 H76 Z" fill="none" stroke="#d03b3b" stroke-width="34" stroke-linejoin="round"/>
-  <path d="M150 404 L214 292 L256 344 L322 232 L400 404 Z" fill="#3987e5" opacity="0.9"/>
-  <rect x="240" y="196" width="32" height="96" rx="16" fill="#fcfcfb"/>
-  <circle cx="256" cy="332" r="19" fill="#fcfcfb"/>
-</svg>

@@ -13,15 +13,21 @@ export const EMERGENCY_NUMBERS = [
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-30 border-b border-edge bg-page/85 backdrop-blur-sm">
+    <header
+      className="sticky top-0 z-30 border-b border-edge bg-page/85 backdrop-blur-sm"
+      // Clears the status bar on a phone. The native layer is told not to
+      // overlay the WebView, but a notch or a browser in fullscreen can still
+      // intrude, and this costs nothing when the inset is zero.
+      style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+    >
       <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-4 px-4 sm:px-6">
         <Link href="/" className="flex min-w-0 items-center gap-2.5">
           <Image
-            src="/icon.svg"
+            src="/logo-badge.png"
             alt=""
-            width={30}
-            height={30}
-            className="shrink-0 rounded-[7px]"
+            width={34}
+            height={34}
+            className="shrink-0"
             priority
           />
           <span className="min-w-0">

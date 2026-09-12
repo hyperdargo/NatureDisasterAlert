@@ -140,9 +140,18 @@ export function HomeView({
 
       <InstallCard />
 
-      <StatTiles totals={data.stats.totals} days={days} />
-
-      <CoverageNotice deathsInWindow={data.stats.totals.dead} />
+      {data.pending ? (
+        <div
+          className="h-28 animate-pulse rounded-lg border border-edge bg-surface"
+          role="status"
+          aria-label="Loading reported figures"
+        />
+      ) : (
+        <>
+          <StatTiles totals={data.stats.totals} days={days} />
+          <CoverageNotice deathsInWindow={data.stats.totals.dead} />
+        </>
+      )}
 
       <section aria-label="Hazard map" className="h-[clamp(320px,48vh,520px)]">
         <HazardMap events={data.nepal} viewer={location.coords} />

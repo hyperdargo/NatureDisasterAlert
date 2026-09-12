@@ -2,18 +2,9 @@
   <rect width="1200" height="630" fill="#0d0d0d"/>
   <rect x="0" y="0" width="1200" height="6" fill="#d03b3b"/>
 
-  <g transform="translate(72 86)">
-    <rect width="72" height="72" rx="16" fill="#1a1a19" stroke="#2c2c2a"/>
-    <g transform="translate(36 36) scale(0.1) translate(-256 -256)">
-      <path d="M256 92 L436 404 H76 Z" fill="none" stroke="#d03b3b" stroke-width="34" stroke-linejoin="round"/>
-      <path d="M150 404 L214 292 L256 344 L322 232 L400 404 Z" fill="#3987e5"/>
-      <rect x="240" y="196" width="32" height="96" rx="16" fill="#fcfcfb"/>
-      <circle cx="256" cy="332" r="19" fill="#fcfcfb"/>
-    </g>
-  </g>
-
-  <text x="168" y="118" fill="#ffffff" font-size="27" font-weight="600">Nature Disaster Alert</text>
-  <text x="168" y="150" fill="#898781" font-size="20">by DTEmpire</text>
+  <image x="72" y="76" width="92" height="92" href="LOGO_DATA_URI" preserveAspectRatio="xMidYMid meet"/>
+  <text x="186" y="118" fill="#ffffff" font-size="27" font-weight="600">Nature Disaster Alert</text>
+  <text x="186" y="150" fill="#898781" font-size="20">by DTEmpire</text>
 
   <text x="72" y="252" fill="#ffffff" font-size="60" font-weight="600">Know what is happening</text>
   <text x="72" y="322" fill="#ffffff" font-size="60" font-weight="600">around you</text>

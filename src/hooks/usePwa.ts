@@ -2,6 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createBrowserStore, useBrowserStore } from "./useBrowserState";
+import {
+  ensureChannel,
+  raiseAlerts,
+  readPermission,
+  requestPermission,
+  type AlertItem,
+  type AlertPermission,
+} from "@/lib/notifications";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -88,38 +96,47 @@ export function usePwa() {
   };
 }
 
-/** Notification.permission changes only through a prompt, so re-reads are manual. */
-const permissionStore = createBrowserStore<NotificationPermission | "unsupported">(
-  () => (typeof Notification === "undefined" ? "unsupported" : Notification.permission),
-  "default",
-);
-
 /**
- * Local notifications raised through the service worker.
+ * Alerts when a serious hazard is reported nearby.
  *
- * This is deliberately not Web Push. Web Push would mean storing a
- * subscription endpoint per device on our server, which is the only piece of
- * per-user data this app would ever hold. Doing the proximity check in the tab
- * and raising the notification locally keeps the "no user database" property
- * intact. The tradeoff is honest: alerts fire while the app is open or
- * recently backgrounded, not when it has been closed for hours.
+ * Delegates to src/lib/notifications.ts, which picks the right mechanism for
+ * the platform: the Notifications API on the web, Capacitor's
+ * LocalNotifications inside the packaged Android app. Android's WebView has
+ * never implemented Web Notifications, so the browser path is not merely
+ * degraded there, it is absent.
+ *
+ * Either way the proximity check runs on the device and the alert is raised
+ * locally. No push subscription is stored on any server, so there is no
+ * per-device record to leak and nothing to unsubscribe from.
  */
 export function useLocalAlerts() {
-  const permission = useBrowserStore(permissionStore);
+  const [permission, setPermission] = useState<AlertPermission>("default");
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      await ensureChannel();
+      const current = await readPermission();
+      if (!cancelled) setPermission(current);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const request = useCallback(async () => {
-    if (typeof Notification === "undefined") return;
-    await Notification.requestPermission();
-    permissionStore.notify();
+    const result = await requestPermission();
+    setPermission(result);
   }, []);
 
   const notify = useCallback(
-    async (
-      hazards: Array<{ id: string; title: string; body: string; severity: string }>,
-    ) => {
+    async (hazards: AlertItem[]) => {
       if (permission !== "granted" || hazards.length === 0) return;
-      const registration = await navigator.serviceWorker?.ready;
-      registration?.active?.postMessage({ type: "nearby-hazards", events: hazards });
+      try {
+        await raiseAlerts(hazards);
+      } catch (error) {
+        console.error("could not raise alert:", error);
+      }
     },
     [permission],
   );
