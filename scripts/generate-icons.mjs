@@ -13,7 +13,7 @@
  * y 150-710, with the wordmark beginning just below.
  */
 import sharp from "sharp";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -73,6 +73,21 @@ for (const [density, size] of Object.entries({
     .png()
     .toFile(join(dir, "ic_launcher_foreground.png"));
 }
+
+// Adaptive icons composite the foreground over this colour. Capacitor's
+// default is white, which draws a ring around the emblem on the launcher.
+mkdirSync(join(resRoot, "values"), { recursive: true });
+writeFileSync(
+  join(resRoot, "values", "ic_launcher_background.xml"),
+  `<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Written by scripts/generate-icons.mjs. Matches the app surface so the
+         launcher shows no white ring around the emblem. -->
+    <color name="ic_launcher_background">#0D0D0D</color>
+</resources>
+`,
+  "utf8",
+);
 
 // The splash screen has room for the full lockup, words and all.
 mkdirSync(join(resRoot, "drawable"), { recursive: true });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl } from "@/lib/api-base";
 import type { Stats } from "@/lib/stats";
 import type { DisasterEvent } from "@/lib/types";
@@ -35,7 +35,16 @@ const STALE_ON_MOUNT_MS = 60 * 1000;
 export function useLiveFeed(initial: FeedPayload, days: number, live = true) {
   const [data, setData] = useState(initial);
   const [refreshing, setRefreshing] = useState(false);
-  const [stale, setStale] = useState(false);
+  /**
+   * What went wrong, if anything. Distinguishing these matters: telling
+   * someone they are offline when the network is fine sends them to check
+   * their connection instead of trying again, and during an emergency that is
+   * wasted time.
+   */
+  const [problem, setProblem] = useState<"none" | "offline" | "unreachable">("none");
+  // A single hiccup is not worth announcing; the feed is polled every few
+  // minutes and the server is served stale-while-revalidate behind it.
+  const failures = useRef(0);
 
   const refresh = useCallback(async () => {
     setRefreshing(true);
@@ -61,13 +70,21 @@ export function useLiveFeed(initial: FeedPayload, days: number, live = true) {
         degraded: eventsJson.degraded,
         generatedAt: eventsJson.generatedAt,
       });
+      failures.current = 0;
       // The service worker marks a cached reply, so staleness is stated
       // rather than implied.
-      setStale(eventsRes.headers.get("x-from-cache") === "1");
+      setProblem(eventsRes.headers.get("x-from-cache") === "1" ? "offline" : "none");
     } catch (error) {
       console.error(error);
-      // Keep the last good data on screen, but stop calling it live.
-      setStale(true);
+      failures.current += 1;
+      // Announce only after two consecutive failures, and say which kind.
+      if (failures.current >= 2) {
+        setProblem(
+          typeof navigator !== "undefined" && navigator.onLine === false
+            ? "offline"
+            : "unreachable",
+        );
+      }
     } finally {
       setRefreshing(false);
     }
@@ -109,5 +126,17 @@ export function useLiveFeed(initial: FeedPayload, days: number, live = true) {
     };
   }, [refresh, live]);
 
-  return { data, refresh, refreshing, stale };
+  // Coming back online is worth an immediate retry rather than waiting out
+  // the poll interval.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onOnline = () => {
+      failures.current = 0;
+      void refresh();
+    };
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+  }, [refresh]);
+
+  return { data, refresh, refreshing, problem };
 }

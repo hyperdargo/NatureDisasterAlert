@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#FFFFFF</color>
+    <!-- Written by scripts/generate-icons.mjs. Matches the app surface so the
+         launcher shows no white ring around the emblem. -->
+    <color name="ic_launcher_background">#0D0D0D</color>
 </resources>

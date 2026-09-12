@@ -144,6 +144,13 @@ export function useLocalAlerts() {
   return {
     supported: permission !== "unsupported",
     enabled: permission === "granted",
+    /**
+     * Android will not show the permission dialog again once it has been
+     * refused, so a denied state has to be reported rather than left looking
+     * like a button that does nothing.
+     */
+    blocked: permission === "denied",
+    permission,
     request,
     notify,
   };

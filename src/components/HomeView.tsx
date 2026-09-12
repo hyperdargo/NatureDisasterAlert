@@ -57,7 +57,7 @@ export function HomeView({
   radiusKm: number;
   onRadiusChange: (km: number) => void;
 }) {
-  const { data, refresh, refreshing, stale } = useLiveFeed(initial, days, true);
+  const { data, refresh, refreshing, problem } = useLiveFeed(initial, days, true);
   const location = useLocation();
   const alerts = useLocalAlerts();
   const notifiedFor = useRef<Set<string>>(new Set());
@@ -87,7 +87,7 @@ export function HomeView({
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      {(data.degraded.length > 0 || stale) && (
+      {(data.degraded.length > 0 || problem !== "none") && (
         <p
           role="status"
           className="flex items-start gap-2 rounded-lg border px-4 py-2.5 text-xs"
@@ -99,9 +99,11 @@ export function HomeView({
         >
           <Warning size={14} weight="fill" className="mt-px shrink-0 text-warning" aria-hidden />
           <span>
-            {stale
+            {problem === "offline"
               ? "You are offline. These figures are from the last successful update and may be out of date."
-              : `Some sources did not respond this cycle (${data.degraded.join(", ")}). Coverage may be incomplete.`}
+              : problem === "unreachable"
+                ? "Could not reach the server for the latest update, so these figures may be a few minutes old. Retrying automatically."
+                : `Some sources did not respond this cycle (${data.degraded.join(", ")}). Coverage may be incomplete.`}
           </span>
         </p>
       )}
@@ -121,13 +123,12 @@ export function HomeView({
       />
 
       <div className="flex flex-wrap items-center gap-2">
-        {location.status === "granted" && (
-          <NotificationToggle
-            enabled={alerts.enabled}
-            supported={alerts.supported}
-            onEnable={() => void alerts.request()}
-          />
-        )}
+        <NotificationToggle
+          enabled={alerts.enabled}
+          supported={alerts.supported}
+          blocked={alerts.blocked}
+          onEnable={() => void alerts.request()}
+        />
         <button
           type="button"
           onClick={() => void refresh()}

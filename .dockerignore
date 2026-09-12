@@ -4,6 +4,11 @@ out
 android
 android-capacitor
 android-app-shell
+out
+dist
+tsconfig.tsbuildinfo
+CLAUDE.md
+AGENTS.md
 .git
 .github
 social-media

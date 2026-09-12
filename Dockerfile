@@ -6,8 +6,13 @@
 FROM node:24-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-# The postinstall step copies MapLibre's worker into public/, so scripts must
-# run here. --ignore-scripts would produce a silently broken map.
+# postinstall runs scripts/sync-maplibre-worker.mjs, so that directory has to
+# be present before npm ci. Copying only the manifests here fails with
+# "Cannot find module /app/scripts/sync-maplibre-worker.mjs".
+#
+# Skipping scripts is not an option: it would also skip sharp's install step,
+# and the map worker would be missing with no error to show for it.
+COPY scripts ./scripts
 RUN npm ci
 
 FROM node:24-alpine AS builder

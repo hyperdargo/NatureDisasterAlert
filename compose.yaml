@@ -1,7 +1,10 @@
 # Run the site with:
 #   docker compose up -d --build
 #
-# Then open http://localhost:3000
+# Then open http://localhost:4321
+#
+# Override with PORT and SITE_URL, for example:
+#   PORT=8080 SITE_URL=https://disasteralert.example.com docker compose up -d
 #
 # The container holds no state. All data is fetched live from the public
 # upstream feeds and cached in memory, so restarting loses nothing and there is
@@ -14,12 +17,14 @@ services:
         # Used for canonical URLs, the sitemap and social cards. Change this
         # when serving from a different hostname or they will point at the
         # wrong domain.
-        NEXT_PUBLIC_SITE_URL: ${SITE_URL:-http://localhost:3000}
+        NEXT_PUBLIC_SITE_URL: ${SITE_URL:-http://localhost:4321}
     image: nature-disaster-alert:latest
     container_name: disaster-alert
     restart: unless-stopped
     ports:
-      - "${PORT:-3000}:3000"
+      # Published on 4321 by default. The container always listens on 3000
+      # internally, so only the left-hand side changes.
+      - "${PORT:-4321}:3000"
     environment:
       NODE_ENV: production
       # Optional. Set only if you have been granted a ReliefWeb appname.
