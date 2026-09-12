@@ -1,0 +1,161 @@
+@import "tailwindcss";
+
+/*
+  Palette provenance: validated with the data-viz six-check validator against
+  both surfaces (light #fcfcfb, dark #1a1a19). Categorical slots 1-3 pass all
+  pairs in both modes. Light-mode aqua sits at 2.74:1, below the 3:1 bar, so
+  every chart using it ships direct labels and a table view (the relief rule).
+
+  Colour discipline for this project: chrome is neutral. Hue is spent only on
+  danger and on data. A control that is merely interactive never takes colour,
+  so when something on screen is coloured, it means something.
+*/
+
+:root {
+  color-scheme: light;
+
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --surface-raised: #ffffff;
+
+  --ink: #0b0b0b;
+  --ink-secondary: #52514e;
+  --ink-muted: #898781;
+
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgb(11 11 11 / 0.12);
+  --border-strong: rgb(11 11 11 / 0.22);
+
+  /* Reserved status scale. Never used for series identity. */
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+
+  /* Categorical series, fixed order. Slot 1 doubles as the focus ring. */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --focus: #2a78d6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --surface-raised: #212120;
+
+    --ink: #ffffff;
+    --ink-secondary: #c3c2b7;
+    --ink-muted: #898781;
+
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --border: rgb(255 255 255 / 0.12);
+    --border-strong: rgb(255 255 255 / 0.24);
+
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --focus: #3987e5;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --page: #0d0d0d;
+  --surface: #1a1a19;
+  --surface-raised: #212120;
+
+  --ink: #ffffff;
+  --ink-secondary: #c3c2b7;
+  --ink-muted: #898781;
+
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --border: rgb(255 255 255 / 0.12);
+  --border-strong: rgb(255 255 255 / 0.24);
+
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --focus: #3987e5;
+}
+
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-raised: var(--surface-raised);
+  --color-ink: var(--ink);
+  --color-ink-secondary: var(--ink-secondary);
+  --color-ink-muted: var(--ink-muted);
+  --color-grid: var(--grid);
+  --color-axis: var(--axis);
+  --color-edge: var(--border);
+  --color-edge-strong: var(--border-strong);
+  --color-good: var(--status-good);
+  --color-warning: var(--status-warning);
+  --color-serious: var(--status-serious);
+  --color-critical: var(--status-critical);
+  --color-series-1: var(--series-1);
+  --color-series-2: var(--series-2);
+  --color-series-3: var(--series-3);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-deva: var(--font-noto-deva);
+}
+
+body {
+  background: var(--page);
+  color: var(--ink);
+}
+
+/* Numbers that sit in a column must align; standalone figures need not. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* MapLibre ships its own light chrome; bring its popups onto our surface. */
+.maplibregl-popup-content {
+  background: var(--surface-raised) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  padding: 0 !important;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.24) !important;
+}
+.maplibregl-popup-tip {
+  border-top-color: var(--surface-raised) !important;
+  border-bottom-color: var(--surface-raised) !important;
+}
+.maplibregl-ctrl-group {
+  background: var(--surface-raised) !important;
+  border: 1px solid var(--border) !important;
+}
+.maplibregl-ctrl-attrib {
+  background: rgb(0 0 0 / 0.55) !important;
+}
+.maplibregl-ctrl-attrib a {
+  color: #e6e6e6 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" font-family="Segoe UI, system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b6a64"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#3987e5"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="900" fill="#0d0d0d"/>
+
+  <!-- Title -->
+  <text x="64" y="72" fill="#ffffff" font-size="34" font-weight="600">Nature Disaster Alert</text>
+  <text x="64" y="106" fill="#898781" font-size="19">How live hazard data reaches a phone in Nepal</text>
+  <text x="1536" y="76" fill="#898781" font-size="17" text-anchor="end">disasteralert.ankitgupta.com.np</text>
+  <line x1="64" y1="132" x2="1536" y2="132" stroke="#2c2c2a" stroke-width="1"/>
+
+  <!-- ============ COLUMN 1: SOURCES ============ -->
+  <text x="64" y="178" fill="#c3c2b7" font-size="15" font-weight="600" letter-spacing="1.6">1 · PUBLIC DATA SOURCES</text>
+  <text x="64" y="202" fill="#6b6a64" font-size="14">Four feeds, no API keys, polled on a schedule</text>
+
+  <g>
+    <rect x="64" y="222" width="330" height="96" rx="10" fill="#1a1a19" stroke="#3987e5" stroke-width="2"/>
+    <text x="88" y="254" fill="#ffffff" font-size="18" font-weight="600">BIPAD Portal</text>
+    <text x="88" y="278" fill="#c3c2b7" font-size="14">Government of Nepal</text>
+    <text x="88" y="300" fill="#3987e5" font-size="13">Incidents · deaths · injuries · wards</text>
+  </g>
+  <g>
+    <rect x="64" y="332" width="330" height="80" rx="10" fill="#1a1a19" stroke="#2c2c2a"/>
+    <text x="88" y="362" fill="#ffffff" font-size="17" font-weight="600">USGS</text>
+    <text x="88" y="386" fill="#898781" font-size="13">Earthquakes, magnitude and depth</text>
+  </g>
+  <g>
+    <rect x="64" y="426" width="330" height="80" rx="10" fill="#1a1a19" stroke="#2c2c2a"/>
+    <text x="88" y="456" fill="#ffffff" font-size="17" font-weight="600">GDACS</text>
+    <text x="88" y="480" fill="#898781" font-size="13">EU alert levels, global multi-hazard</text>
+  </g>
+  <g>
+    <rect x="64" y="520" width="330" height="80" rx="10" fill="#1a1a19" stroke="#2c2c2a"/>
+    <text x="88" y="550" fill="#ffffff" font-size="17" font-weight="600">NASA EONET</text>
+    <text x="88" y="574" fill="#898781" font-size="13">Satellite-detected events</text>
+  </g>
+  <g>
+    <rect x="64" y="614" width="330" height="80" rx="10" fill="#1a1a19" stroke="#2c2c2a"/>
+    <text x="88" y="644" fill="#ffffff" font-size="17" font-weight="600">Google News · OpenStreetMap</text>
+    <text x="88" y="668" fill="#898781" font-size="13">Press coverage · hospitals · highways</text>
+  </g>
+
+  <!-- Arrows into server -->
+  <path d="M 400 270 C 448 270 448 400 486 400" stroke="#3987e5" stroke-width="2.5" fill="none" marker-end="url(#arrowBlue)"/>
+  <path d="M 400 372 C 444 372 444 400 486 400" stroke="#6b6a64" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 400 466 C 444 466 444 404 486 404" stroke="#6b6a64" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 400 560 C 444 560 444 410 486 410" stroke="#6b6a64" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 400 654 C 444 654 444 416 486 416" stroke="#6b6a64" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- ============ COLUMN 2: SERVER ============ -->
+  <text x="496" y="178" fill="#c3c2b7" font-size="15" font-weight="600" letter-spacing="1.6">2 · SERVER  (Next.js on Oracle Cloud)</text>
+  <text x="496" y="202" fill="#6b6a64" font-size="14">The browser never calls a third party directly</text>
+
+  <rect x="496" y="222" width="470" height="472" rx="12" fill="#141413" stroke="#383835" stroke-width="1.5"/>
+
+  <g>
+    <rect x="520" y="248" width="422" height="72" rx="8" fill="#1a1a19" stroke="#2c2c2a"/>
+    <text x="542" y="276" fill="#ffffff" font-size="16" font-weight="600">Validate every response</text>
+    <text x="542" y="300" fill="#898781" font-size="13">Zod schemas · timeouts · size caps · retries</text>
+  </g>
+  <g>
+    <rect x="520" y="332" width="422" height="72" rx="8" fill="#1a1a19" stroke="#2c2c2a"/>
+    <text x="542" y="360" fill="#ffffff" font-size="16" font-weight="600">Normalise and de-duplicate</text>
+    <text x="542" y="384" fill="#898781" font-size="13">One shape for all feeds · merge within 50 km / 12 h</text>
+  </g>
+  <g>
+    <rect x="520" y="416" width="422" height="72" rx="8" fill="#1a1a19" stroke="#2c2c2a"/>
+    <text x="542" y="444" fill="#ffffff" font-size="16" font-weight="600">Resolve the place</text>
+    <text x="542" y="468" fill="#898781" font-size="13">ward → municipality → district → province</text>
+  </g>
+  <g>
+    <rect x="520" y="500" width="422" height="72" rx="8" fill="#1a1a19" stroke="#2c2c2a"/>
+    <text x="542" y="528" fill="#ffffff" font-size="16" font-weight="600">Aggregate</text>
+    <text x="542" y="552" fill="#898781" font-size="13">Daily series · by hazard · by district · impact score</text>
+  </g>
+  <g>
+    <rect x="520" y="584" width="422" height="86" rx="8" fill="#1a1a19" stroke="#0ca30c" stroke-width="1.5"/>
+    <text x="542" y="612" fill="#ffffff" font-size="16" font-weight="600">Cache and degrade gracefully</text>
+    <text x="542" y="636" fill="#898781" font-size="13">One dead feed reduces coverage,</text>
+    <text x="542" y="656" fill="#898781" font-size="13">it never blanks the page</text>
+  </g>
+
+  <path d="M 972 440 L 1024 440" stroke="#3987e5" stroke-width="2.5" fill="none" marker-end="url(#arrowBlue)"/>
+
+  <!-- ============ COLUMN 3: DEVICE ============ -->
+  <text x="1034" y="178" fill="#c3c2b7" font-size="15" font-weight="600" letter-spacing="1.6">3 · ON THE PHONE</text>
+  <text x="1034" y="202" fill="#6b6a64" font-size="14">Installable on Android and iPhone, free on both</text>
+
+  <rect x="1034" y="222" width="502" height="472" rx="12" fill="#141413" stroke="#383835" stroke-width="1.5"/>
+
+  <g>
+    <rect x="1058" y="248" width="454" height="96" rx="8" fill="#1a1a19" stroke="#d03b3b" stroke-width="1.5"/>
+    <text x="1080" y="276" fill="#ffffff" font-size="16" font-weight="600">Distance worked out on the device</text>
+    <text x="1080" y="300" fill="#c3c2b7" font-size="13">Your coordinates are compared to the hazard</text>
+    <text x="1080" y="320" fill="#c3c2b7" font-size="13">list inside the browser. The server is never</text>
+    <text x="1080" y="336" fill="#c3c2b7" font-size="13">told where you are.</text>
+  </g>
+  <g>
+    <rect x="1058" y="356" width="454" height="72" rx="8" fill="#1a1a19" stroke="#2c2c2a"/>
+    <text x="1080" y="384" fill="#ffffff" font-size="16" font-weight="600">Live map and nearby list</text>
+    <text x="1080" y="408" fill="#898781" font-size="13">Severity coloured · &quot;22 km away, yesterday&quot;</text>
+  </g>
+  <g>
+    <rect x="1058" y="440" width="454" height="72" rx="8" fill="#1a1a19" stroke="#2c2c2a"/>
+    <text x="1080" y="468" fill="#ffffff" font-size="16" font-weight="600">Alerts when something is close</text>
+    <text x="1080" y="492" fill="#898781" font-size="13">Raised locally, so no device is registered anywhere</text>
+  </g>
+  <g>
+    <rect x="1058" y="524" width="454" height="72" rx="8" fill="#1a1a19" stroke="#2c2c2a"/>
+    <text x="1080" y="552" fill="#ffffff" font-size="16" font-weight="600">One tap to call for help</text>
+    <text x="1080" y="576" fill="#898781" font-size="13">100 · 102 · 101 · 1149 and the nearest hospitals</text>
+  </g>
+  <g>
+    <rect x="1058" y="608" width="454" height="62" rx="8" fill="#1a1a19" stroke="#0ca30c" stroke-width="1.5"/>
+    <text x="1080" y="636" fill="#ffffff" font-size="16" font-weight="600">Works offline</text>
+    <text x="1080" y="658" fill="#898781" font-size="13">Cached copy is shown and clearly labelled as stale</text>
+  </g>
+
+  <!-- ============ FOOTER STRIP ============ -->
+  <line x1="64" y1="730" x2="1536" y2="730" stroke="#2c2c2a" stroke-width="1"/>
+  <text x="64" y="768" fill="#c3c2b7" font-size="15" font-weight="600" letter-spacing="1.6">BUILT WITH</text>
+  <text x="64" y="798" fill="#898781" font-size="16">Next.js · React · TypeScript · Tailwind · MapLibre GL · Zod</text>
+
+  <text x="64" y="842" fill="#c3c2b7" font-size="15" font-weight="600" letter-spacing="1.6">HARDENED WITH</text>
+  <text x="64" y="872" fill="#898781" font-size="16">Nonce-based CSP · no user accounts · no personal data stored · rate limiting · every upstream response validated</text>
+
+  <rect x="1140" y="748" width="396" height="124" rx="10" fill="#1a1a19" stroke="#3987e5" stroke-width="1.5"/>
+  <text x="1164" y="782" fill="#3987e5" font-size="14" font-weight="600" letter-spacing="1.2">HONESTY RULE</text>
+  <text x="1164" y="810" fill="#ffffff" font-size="14">An unknown death toll is shown as</text>
+  <text x="1164" y="832" fill="#ffffff" font-size="14">&quot;not reported&quot;, never as zero, and</text>
+  <text x="1164" y="854" fill="#ffffff" font-size="14">totals say which source they came from.</text>
+</svg>
