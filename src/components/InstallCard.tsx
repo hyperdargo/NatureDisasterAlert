@@ -14,7 +14,7 @@ import {
 import { useBrowserStore } from "@/hooks/useBrowserState";
 import { platformStore, dismissedStore, dismissInstallCard } from "@/lib/install-state";
 import { usePwa } from "@/hooks/usePwa";
-import { APK_DOWNLOAD_URL } from "@/lib/site";
+import { APK_DOWNLOAD_URL, APK_IS_LOCAL } from "@/lib/site";
 
 /**
  * The install offer, shown on the live dashboard.
@@ -71,13 +71,14 @@ export function InstallCard() {
             <div className="mt-4 flex flex-wrap items-center gap-2">
               <a
                 href={APK_DOWNLOAD_URL}
-                target="_blank"
-                rel="noopener noreferrer"
+                {...(APK_IS_LOCAL
+                  ? { download: "nature-disaster-alert.apk" }
+                  : { target: "_blank", rel: "noopener noreferrer" })}
                 onClick={() => setJustDownloaded(true)}
                 className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-ink px-4 text-sm font-medium text-page transition-transform active:translate-y-px"
               >
                 <DownloadSimple size={17} weight="bold" aria-hidden />
-                Get the app
+                Download the app
               </a>
 
               {pwa.canInstall && (
@@ -105,10 +106,10 @@ export function InstallCard() {
               role="status"
               className="mt-3 rounded border border-edge bg-raised p-3 text-xs leading-relaxed text-ink-secondary"
             >
-              Download the file from the page that opened, then open it from
-              your notifications. Android will ask whether to allow installing
-              from this source; turn it on, go back, then tap Install. That
-              warning is normal for any app not from the Play Store.
+              Open the file from your notifications when it finishes. Android
+              will ask whether to allow installing from this source; turn it
+              on, go back, then tap Install. That warning is normal for any app
+              not from the Play Store.
             </p>
           )}
 

@@ -142,6 +142,10 @@ export default nextConfig;
     throw new Error("next build produced no out/ directory");
   }
 
+  // The APK is served from public/app so the website can offer it for
+  // download. It must not travel inside the app: each build would embed the
+  // previous APK and the file would grow without bound.
+  rmSync(join(outDir, "app"), { recursive: true, force: true });
   // The QR code and social card serve the website only; no need to ship them
   // inside the app.
   rmSync(join(outDir, "install-qr.png"), { force: true });

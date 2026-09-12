@@ -45,7 +45,24 @@ const nextConfig: NextConfig = {
   // visitor who opens devtools, and roughly double the transferred bytes.
   productionBrowserSourceMaps: false,
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      {
+        // Android needs the right content type to offer the install prompt,
+        // and some proxies serve an unknown extension as plain text.
+        source: "/app/:file*.apk",
+        headers: [
+          { key: "content-type", value: "application/vnd.android.package-archive" },
+          {
+            key: "content-disposition",
+            value: 'attachment; filename="nature-disaster-alert.apk"',
+          },
+          // Long-lived: a new build changes nothing about this path, so the
+          // cache is busted by redeploying rather than by a query string.
+          { key: "cache-control", value: "public, max-age=3600" },
+        ],
+      },
+    ];
   },
   async rewrites() {
     return [

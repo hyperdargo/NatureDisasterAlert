@@ -154,10 +154,14 @@ npm run apk
 That builds, aligns, signs and verifies in one step, writing the result to
 `public/app/nature-disaster-alert.apk` and printing its SHA-256.
 
-**Where users actually download it.** `public/app/` is the real distribution
-path, because this repository is private and GitHub release assets on a private
-repository return 404 to anyone who is not signed in. Releases here are a
-versioned archive, not a download link you can share.
+**Where users actually download it.** The site serves it from `public/app/`,
+which is why the APK is committed. Two alternatives were tried and rejected:
+GitHub release assets return 404 to anyone not signed in while this repository
+is private, and an external file host is one more thing that can go down and
+take the install route with it, which is exactly what happened.
+
+The cost is a 6MB binary in git history per release. If that becomes tiresome,
+set `NEXT_PUBLIC_APK_URL` to a CDN and stop committing it.
 
 `android/android.keystore` and `android/signing-key.env` are **not** in this
 repository and must not be. Anyone holding them can publish an update Android

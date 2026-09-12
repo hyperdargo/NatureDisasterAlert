@@ -15,17 +15,19 @@ export const AUTHOR = "Ankit Gupta";
 /**
  * Where the Android APK is downloaded from.
  *
- * Hosted on a separate file service rather than served from this site, so a
- * 6MB binary is not sitting in the web deployment and the download does not
- * compete with the app itself for bandwidth during an emergency.
+ * Served from this site by default. That keeps the download on a domain the
+ * reader already trusts and has no extra moving part to fail: an external file
+ * host going down takes the install route with it, which is exactly what
+ * happened once already.
  *
- * It is an external page rather than a direct file, which is deliberate: the
- * reader sees the filename and size before anything downloads, which is the
- * right way round for an app installed outside the Play Store.
+ * Set NEXT_PUBLIC_APK_URL to point somewhere else, for example a file host or
+ * a CDN, if the bandwidth ever becomes a problem.
  */
 export const APK_DOWNLOAD_URL =
-  process.env.NEXT_PUBLIC_APK_URL ??
-  "https://depot.ankitgupta.com.np/index.php/s/2Nc7dCxzoGT7wNs";
+  process.env.NEXT_PUBLIC_APK_URL ?? "/app/nature-disaster-alert.apk";
+
+/** True when the download is served from this site rather than elsewhere. */
+export const APK_IS_LOCAL = APK_DOWNLOAD_URL.startsWith("/");
 
 export function absoluteUrl(path: string): string {
   return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;

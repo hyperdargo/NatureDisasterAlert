@@ -9,7 +9,7 @@ import {
   PlusSquare,
   WifiSlash,
 } from "@phosphor-icons/react/dist/ssr";
-import { APK_DOWNLOAD_URL } from "@/lib/site";
+import { APK_DOWNLOAD_URL, APK_IS_LOCAL } from "@/lib/site";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/install" },
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
  * what this app actually needs.
  */
 const ANDROID_STEPS = [
-  "Tap the button above. It opens the download page for the app file.",
+  "Tap the button above to download the app file.",
   "Open it from your notifications or your Downloads folder.",
   "Android will ask whether to allow installing from this source. Tap Settings, turn the permission on, then go back.",
   "Tap Install, then Open.",
@@ -75,12 +75,13 @@ export default function InstallPage() {
 
             <a
               href={APK_DOWNLOAD_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+              {...(APK_IS_LOCAL
+                ? { download: "nature-disaster-alert.apk" }
+                : { target: "_blank", rel: "noopener noreferrer" })}
               className="mt-4 flex min-h-12 items-center justify-center gap-2 rounded-lg border border-transparent bg-ink px-4 text-sm font-medium text-page transition-transform active:translate-y-px"
             >
               <DownloadSimple size={17} weight="bold" aria-hidden />
-              Get the app for Android
+              Download for Android
             </a>
 
             <ol className="mt-4 space-y-2.5">

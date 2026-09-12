@@ -49,7 +49,7 @@ android/gradle/wrapper/gradle-wrapper.jar
 # GitHub release rather than committed, so the repository does not carry a
 # 6MB binary that changes on every build.
 android/app/build/outputs/
-public/app/
+
 
 # ---------------------------------------------------------------------------
 # Editor and OS noise

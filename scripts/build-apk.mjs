@@ -9,9 +9,11 @@
  * from the deployed site, because that data is live.
  *
  * Steps: build the static shell, copy it into the native project, compile,
- * align, sign, verify. The result lands in public/app/, which is the real
- * distribution path because this repository is private and GitHub release
- * assets on a private repository return 404 to anyone not signed in.
+ * align, sign, verify. The result lands in public/app/, which is where the
+ * website serves it from. That is the distribution path because this
+ * repository is private, so GitHub release assets return 404 to anyone who is
+ * not signed in, and because an external file host is one more thing that can
+ * go down and take the install route with it.
  *
  * Requires android-capacitor/../android/signing-key.env, which is deliberately
  * not in the repository. Without the original key you cannot ship an upgrade
@@ -19,7 +21,7 @@
  */
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -113,10 +115,9 @@ console.log("\n> 4/5 Aligning\n");
 // -p page-aligns uncompressed native libraries; -f overwrites.
 run(zipalign, ["-p", "-f", "4", unsigned, aligned], root, false);
 
-// Written to dist/ rather than public/: the APK is distributed from the
-// depot and attached to GitHub releases, not served by this site. Keeping it
-// out of public/ also stops the static export embedding the APK inside the
-// next APK.
+// Signed into dist/ first, then copied into public/app below. The static
+// export deletes public/app before packaging, so the APK never ends up inside
+// the next APK.
 const outDir = join(root, "dist");
 mkdirSync(outDir, { recursive: true });
 const signed = join(outDir, "nature-disaster-alert.apk");
@@ -146,11 +147,17 @@ run(isWindows ? "npm.cmd" : "npm", ["run", "build"], root);
 const sha256 = createHash("sha256").update(readFileSync(signed)).digest("hex");
 const mb = (statSync(signed).size / 1024 / 1024).toFixed(2);
 
+// Also placed where the website serves it from, so /install offers this
+// build rather than whatever was published last.
+const servedCopy = join(root, "public", "app", "nature-disaster-alert.apk");
+mkdirSync(dirname(servedCopy), { recursive: true });
+copyFileSync(signed, servedCopy);
+
 console.log(`
   Built  dist/nature-disaster-alert.apk
+         public/app/nature-disaster-alert.apk (served by the site)
   Size   ${mb} MB
   SHA256 ${sha256}
 
-  Upload it to the depot so /install points at this build:
-  https://depot.ankitgupta.com.np
+  Deploy the site and /install will offer this build.
 `);
