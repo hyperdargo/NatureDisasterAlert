@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     // Returns immediately. Overpass is refreshed behind the request, because
     // it can take 45 seconds or hang, and a page that waits on it is
     // indistinguishable from a broken one.
-    const advisory = getRoadAdvisory(feed.events.filter((e) => e.inNepal));
+    const advisory = getRoadAdvisory(feed.events.filter((e) => e.country === "NP"));
     return NextResponse.json(advisory, {
       headers: {
         // Not cached while warming, or the empty first answer would be served

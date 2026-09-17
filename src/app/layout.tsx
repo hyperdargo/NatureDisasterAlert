@@ -1,16 +1,24 @@
 import type { ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Noto_Sans_Devanagari } from "next/font/google";
+import { Geist_Mono, Mona_Sans, Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
 import { AppFrame } from "@/components/AppFrame";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/site";
 import { StructuredData } from "@/components/StructuredData";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
+/**
+ * Mona Sans with its width axis: display type is set wide, and the home
+ * screen's country name widens into place as the globe lands.
+ */
+const monaSans = Mona_Sans({
+  variable: "--font-mona",
+  subsets: ["latin", "latin-ext"],
+  axes: ["wdth"],
+});
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
-/** Incident titles arrive from BIPAD in Nepali as well as English. */
+/** Nepal's incident titles arrive in Nepali as well as English. */
 const notoDevanagari = Noto_Sans_Devanagari({
   variable: "--font-noto-deva",
   subsets: ["devanagari"],
@@ -27,7 +35,7 @@ export const metadata: Metadata = {
     template: "%s - Nature Disaster Alert",
   },
   description:
-    "Live flood, landslide, earthquake and storm alerts for Nepal, with verified casualty figures from official and international sources.",
+    "Live earthquake, flood, cyclone, wildfire and storm alerts for your country, with its emergency numbers one tap away. Deepest coverage for Nepal.",
   applicationName: "Nature Disaster Alert",
   appleWebApp: {
     capable: true,
@@ -51,17 +59,17 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
-    locale: "en_NP",
+    locale: "en",
     url: SITE_URL,
     title: "Nature Disaster Alert by DTEmpire",
     description:
-      "Live flood, landslide, earthquake and storm alerts for Nepal, with emergency numbers one tap away.",
+      "Live hazard alerts for your country: what is near you, how far, and who to call.",
     images: [
       {
         url: absoluteUrl("/og-card.png"),
         width: 1200,
         height: 630,
-        alt: "Nature Disaster Alert: live hazard map for Nepal, drawing on BIPAD, USGS, GDACS and NASA EONET.",
+        alt: "Nature Disaster Alert: live hazard map drawing on USGS, GDACS, NASA EONET and national feeds.",
       },
     ],
   },
@@ -69,7 +77,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Nature Disaster Alert by DTEmpire",
     description:
-      "Live flood, landslide and earthquake alerts for Nepal, free on Android and iPhone.",
+      "Live hazard alerts for your country, free on Android and iPhone.",
     images: [absoluteUrl("/og-card.png")],
   },
   category: "news",
@@ -77,10 +85,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f9f9f7" },
-    { media: "(prefers-color-scheme: dark)", color: "#0d0d0d" },
-  ],
+  themeColor: "#05070a",
+  colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -90,28 +96,26 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${notoDevanagari.variable} h-full antialiased`}
+      className={`${monaSans.variable} ${geistMono.variable} ${notoDevanagari.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-page text-ink">
+      <body className="flex min-h-full flex-col bg-page font-sans text-ink">
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-3 focus:rounded focus:border focus:border-edge-strong focus:bg-raised focus:px-3 focus:py-2 focus:text-sm"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:text-page"
         >
           Skip to content
         </a>
         <StructuredData />
         <AppFrame>
           <SiteHeader />
-          {/* Bottom padding clears the fixed tab bar and the emergency button
-              on phones; on wider screens neither is present. */}
-          <main
-            id="main"
-            className="mx-auto w-full max-w-[1400px] flex-1 px-4 pt-6 pb-32 sm:px-6 md:pb-10"
-          >
+          {/* Pages own their width: the home screen is full-bleed, the rest
+              use the .page container. */}
+          <main id="main" className="relative -mt-[4.25rem] flex-1">
             {children}
           </main>
           <SiteFooter />
         </AppFrame>
+        <div aria-hidden className="grain" />
       </body>
     </html>
   );

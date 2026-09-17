@@ -1,28 +1,35 @@
 # Nature Disaster Alert
 
-A live disaster early-warning map for Nepal.
+A live disaster early-warning map that adapts to the country you are in. Deepest
+coverage for Nepal.
 
 **Live:** https://disasteralert.ankitgupta.com.np
 **Install:** https://disasteralert.ankitgupta.com.np/install
 
-Aggregates four public hazard feeds into one view, shows what is happening near
-you with real distances, and puts the emergency services one tap away. Installs
-free on Android and iPhone.
+Aggregates public hazard feeds into one view, shows what is happening near you
+with real distances, and puts your country's emergency numbers one tap away.
+Installs free on Android and iPhone.
 
 ---
 
 ## What it does
 
+- **Your country, automatically.** A first guess from the device time zone, then
+  your GPS position matched against country borders in the browser, and a
+  country switcher on every page that always wins. Emergency numbers, official
+  warnings, news, the map view and the guides all follow it. Nothing about
+  your location is sent to work this out.
 - **Near you.** Hazards within 25, 50 or 100 km with real distances, ranked
   gravest first. The distance is computed in your browser, so the server is
   never told where you are.
 - **Impact.** Deaths, injuries, missing, displacement and homes destroyed,
   resolved down to municipality and district.
 - **Map.** Every incident plotted and coloured by severity.
-- **Emergency.** One tap to dial 100, 102, 101, 1149 or 103, plus the nearest
-  hospitals and police stations with their real phone numbers.
-- **Roads.** Highways with a landslide or flood reported nearby. Explicitly not
-  a closure list; see the note below.
+- **Emergency.** One tap to dial your country's emergency numbers, labelled by
+  how they were verified, plus the nearest hospitals and police stations with
+  their real phone numbers.
+- **Roads (Nepal).** Highways with a landslide or flood reported nearby.
+  Explicitly not a closure list; see the note below.
 - **News.** Press coverage from Reuters, BBC and others, shown next to the
   official figures for context.
 - **Offline.** Serves the last good copy and labels it as stale.
@@ -34,13 +41,29 @@ All keyless and public. No API key is needed to run this project.
 | Source | Role |
 |---|---|
 | [BIPAD Portal](https://bipadportal.gov.np/) | Government of Nepal's official incident record. The only source with verified casualty figures, and the authority for them here. |
+| [NDMA SACHET](https://sachet.ndma.gov.in/) | India's national alerting feed. Official warnings from IMD, CWC and state agencies. |
+| [National Weather Service](https://www.weather.gov/documentation/services-web-api) | Active official alerts for the United States. |
 | [USGS](https://earthquake.usgs.gov/fdsnws/event/1/) | Earthquakes, worldwide and at low magnitude inside Nepal. |
 | [GDACS](https://www.gdacs.org/) | European Commission multi-hazard alert levels. Publishes modelled exposure, not verified counts. |
 | [NASA EONET](https://eonet.gsfc.nasa.gov/) | Satellite-detected natural events. |
 | [OpenStreetMap](https://www.openstreetmap.org/) via Overpass | Nearby hospitals, clinics, police, fire stations and highways. |
-| Google News RSS | Press coverage. |
+| Google News RSS | Press coverage, searched per country. |
+| [Natural Earth](https://www.naturalearthdata.com/) | Country borders, for locating events and readers. Public domain. |
+| [IANA tz database](https://www.iana.org/time-zones) | Time zone to country, for the first guess. Public domain. |
+| [Wikipedia](https://en.wikipedia.org/wiki/List_of_emergency_telephone_numbers) | Compiled emergency numbers (CC BY-SA 4.0), used only where no official check was made. |
 
-## Three things worth knowing before you read the code
+## Four things worth knowing before you read the code
+
+**0. Emergency numbers carry their provenance.**
+About fifty countries (every EU member state, India, Nepal, the US, Canada,
+Mexico, the UK, Australia, New Zealand, Japan, China, Bangladesh, Pakistan, Sri
+Lanka, Bhutan, the Philippines, Indonesia, Brazil, South Africa, Turkey,
+Switzerland) were checked against an official page, linked beside the numbers
+with the date. Everything else comes from Wikipedia's compiled list and is
+labelled "confirm locally". Nepal's 1149, 1144 and 1098 could not be confirmed
+on an official page when checked and are shown under "Not re-checked". To
+promote a country, see `src/lib/countries/emergency.ts`. Country data is
+rebuilt with `node scripts/build-country-data.mjs`.
 
 **1. The headline figures are a floor, not a national total.**
 They count individual incident reports filed to BIPAD. That log undercounts
@@ -127,13 +150,15 @@ npx eslint src       # lint
 ```
 src/
   app/
-    api/             route handlers: events, stats, services, roads, news, assetlinks
-    page.tsx         the live dashboard
+    api/             route handlers: events, stats, services, roads, news, warnings, assetlinks
+    page.tsx         the live dashboard (status stage, map, official record, guides)
     prepare/         what to do during each hazard
     install/         Android and iPhone install instructions
-  components/        UI, one concern per file
+  components/        UI, one concern per file; home/ holds the home screen sections
+  data/              generated country data: borders, globe dots, time zones, numbers
   hooks/             geolocation, PWA install, browser-state stores
   lib/
+    countries/       country identity, emergency numbers, per-country coverage
     sources/         one adapter per upstream feed
     aggregate.ts     merge and de-duplicate across sources
     stats.ts         daily series, by hazard, by district

@@ -11,7 +11,7 @@ import { AUTHOR, SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/site";
  * catch, and a manual action would cost far more than the rich result gained.
  *
  * WebApplication is what this actually is, and it supports the fields that
- * matter: it is free, it runs in a browser, and it covers Nepal.
+ * matter: it is free, it runs in a browser, and it covers every country.
  */
 export function StructuredData() {
   const graph = {
@@ -27,13 +27,15 @@ export function StructuredData() {
         operatingSystem: "Any modern web browser, Android, iOS",
         browserRequirements: "Requires JavaScript and a modern browser",
         description:
-          "Live flood, landslide, earthquake and storm alerts for Nepal, aggregating the Government of Nepal's BIPAD incident record with USGS, GDACS and NASA EONET. Shows hazards near you with real distances and puts the emergency services one tap away.",
+          "Live earthquake, flood, cyclone, wildfire and storm alerts for your country, aggregating USGS, GDACS and NASA EONET with national feeds where they exist (Nepal's BIPAD incident record, India's NDMA SACHET, the US National Weather Service). Shows hazards near you with real distances and puts your country's emergency numbers one tap away.",
         inLanguage: "en",
         isAccessibleForFree: true,
-        offers: { "@type": "Offer", price: "0", priceCurrency: "NPR" },
+        offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
         featureList: [
           "Hazards near your location with real distances",
-          "Casualty and impact figures by district",
+          "Emergency numbers for your country, labelled by how they were verified",
+          "Official warnings for India and the United States",
+          "Casualty and impact figures by district for Nepal",
           "One-tap emergency dialling and nearest hospitals",
           "Road advisory for highways with hazards reported nearby",
           "Works offline",
@@ -45,6 +47,8 @@ export function StructuredData() {
         // crawler) judge how much weight the figures deserve.
         isBasedOn: [
           { "@type": "Dataset", name: "BIPAD Portal", url: "https://bipadportal.gov.np/" },
+          { "@type": "Dataset", name: "NDMA SACHET", url: "https://sachet.ndma.gov.in/" },
+          { "@type": "Dataset", name: "National Weather Service alerts", url: "https://www.weather.gov/" },
           {
             "@type": "Dataset",
             name: "USGS Earthquake Hazards Program",
@@ -53,11 +57,6 @@ export function StructuredData() {
           { "@type": "Dataset", name: "GDACS", url: "https://www.gdacs.org/" },
           { "@type": "Dataset", name: "NASA EONET", url: "https://eonet.gsfc.nasa.gov/" },
         ],
-        about: {
-          "@type": "Place",
-          name: "Nepal",
-          address: { "@type": "PostalAddress", addressCountry: "NP" },
-        },
       },
       {
         "@type": "WebSite",

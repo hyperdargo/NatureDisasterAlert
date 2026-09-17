@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Phone } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
+import { CallButton } from "@/components/CallButton";
 
 export const metadata: Metadata = {
   title: "Page not found",
@@ -25,9 +26,9 @@ const LINKS = [
 
 export default function NotFound() {
   return (
-    <div className="mx-auto max-w-2xl py-6">
-      <p className="tabular text-sm text-ink-muted">404</p>
-      <h1 className="mt-2 text-2xl leading-tight font-medium tracking-tight text-ink sm:text-3xl">
+    <div className="page max-w-2xl!">
+      <p className="readout">Error 404</p>
+      <h1 className="display mt-3 text-[clamp(2.4rem,6vw,4rem)] text-ink">
         That page does not exist
       </h1>
       <p className="mt-2 text-sm text-ink-secondary">
@@ -35,21 +36,14 @@ export default function NotFound() {
         below still works.
       </p>
 
-      <a
-        href="tel:100"
-        className="mt-6 flex min-h-14 items-center justify-center gap-2 rounded-lg text-sm font-medium text-white transition-transform active:translate-y-px"
-        style={{ background: "var(--status-critical)" }}
-      >
-        <Phone size={17} weight="fill" aria-hidden />
-        Emergency? Call 100
-      </a>
+      <CallButton />
 
       <ul className="mt-6 grid gap-2">
         {LINKS.map((link) => (
           <li key={link.href}>
             <Link
               href={link.href}
-              className="flex min-h-16 items-center gap-3 rounded-lg border border-edge bg-surface px-4 py-3 transition-colors hover:border-edge-strong"
+              className="flex min-h-16 items-center gap-3 rounded-3xl border border-edge bg-surface px-4 py-3 transition-colors hover:border-edge-strong"
             >
               <span className="min-w-0 flex-1">
                 <span className="block text-sm text-ink">{link.label}</span>

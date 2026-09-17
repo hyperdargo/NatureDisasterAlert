@@ -39,7 +39,7 @@ export const PAGES = [
     path: "/",
     title: "Near me",
     description:
-      "Live hazards near your location in Nepal, with real distances and one-tap emergency dialling.",
+      "Live hazards near you, in your country, with real distances and your emergency numbers one tap away.",
     changeFrequency: "hourly" as const,
     priority: 1,
   },
@@ -47,7 +47,7 @@ export const PAGES = [
     path: "/incidents",
     title: "Incident log",
     description:
-      "Every hazard incident reported in Nepal in the last 30 days, with daily casualty trends and the worst-affected districts.",
+      "Every hazard reported in your country in the last 30 days, with official warnings where they exist and verified casualty figures for Nepal.",
     changeFrequency: "hourly" as const,
     priority: 0.9,
   },
@@ -55,7 +55,7 @@ export const PAGES = [
     path: "/news",
     title: "News",
     description:
-      "Press coverage of disasters in Nepal, and hazards being tracked in other countries.",
+      "Press coverage of disasters in your country, and hazards being tracked around the world.",
     changeFrequency: "hourly" as const,
     priority: 0.7,
   },
@@ -71,7 +71,7 @@ export const PAGES = [
     path: "/prepare",
     title: "What to do",
     description:
-      "What to do during a snakebite, landslide, flood, earthquake, lightning storm or house fire in Nepal.",
+      "What to do during an earthquake, flood, landslide, cyclone, wildfire, heat wave, lightning storm, house fire or snakebite.",
     changeFrequency: "monthly" as const,
     priority: 0.8,
   },
@@ -87,7 +87,7 @@ export const PAGES = [
     path: "/faq",
     title: "Questions",
     description:
-      "Where the data comes from, why the casualty figures are lower than the news, and why there is no safe-route feature.",
+      "How the site picks your country, how far the emergency numbers can be trusted, and where the data comes from.",
     changeFrequency: "monthly" as const,
     priority: 0.6,
   },

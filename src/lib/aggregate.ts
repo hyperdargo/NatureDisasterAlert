@@ -140,7 +140,7 @@ async function buildFeed(days: number): Promise<Feed> {
   const { events, failed } = await gatherSources<DisasterEvent>([
     { name: "BIPAD Portal", run: () => fetchBipad(sinceIso) },
     // Two seismic passes: everything down to M3 inside Nepal, where a small
-    // quake still matters locally, plus significant quakes worldwide.
+    // quake still matters locally, plus M4.5 and above worldwide.
     { name: "USGS (Nepal)", run: () => fetchUsgs(sinceIso, NEPAL_BBOX) },
     { name: "USGS (global)", run: () => fetchUsgs(sinceIso, null) },
     { name: "GDACS", run: () => fetchGdacs() },
@@ -148,7 +148,7 @@ async function buildFeed(days: number): Promise<Feed> {
   ]);
 
   const cutoff = Date.now() - days * 86_400_000;
-  // The two USGS passes overlap on Nepal quakes above M5; collapse by event id.
+  // The two USGS passes overlap on Nepal quakes above M4.5; collapse by event id.
   const unique = [...new Map(events.map((e) => [e.id, e])).values()];
   const withinWindow = unique.filter((e) => Date.parse(e.occurredAt) >= cutoff);
 

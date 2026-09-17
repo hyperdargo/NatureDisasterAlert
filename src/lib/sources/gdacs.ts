@@ -1,6 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 import { fetchText } from "../fetch-upstream";
-import { isInNepal } from "../geo";
+import { countryForEvent } from "../countries/server";
 import {
   EMPTY_CASUALTIES,
   type DisasterEvent,
@@ -97,6 +97,7 @@ export async function fetchGdacs(): Promise<DisasterEvent[]> {
 
     const name = text(item.eventname);
     const kind = TYPE_TO_KIND[eventType] ?? "other";
+    const code = countryForEvent(lat, lon, country?.split(/[,;]/)[0]);
 
     events.push({
       id: `gdacs-${eventType}-${eventId}`,
@@ -114,9 +115,11 @@ export async function fetchGdacs(): Promise<DisasterEvent[]> {
         // Modelled exposure estimate, never a verified count.
         affected: affected !== null && affected > 0 ? Math.round(affected) : null,
       },
-      metric: text(item.severity),
+      // GDACS writes "Magnitude 0" for hazards it has no magnitude for.
+      metric: /magnitude 0(\.0+)?\b/i.test(text(item.severity) ?? "") ? null : text(item.severity),
       url: text(item.link),
-      inNepal: isInNepal(lat, lon),
+      country: code,
+      inNepal: code === "NP",
       area: null,
     });
   }

@@ -21,26 +21,34 @@ const TILES = [
   emphasis: boolean;
 }>;
 
-export function StatTiles({ totals, days }: { totals: Totals; days: number }) {
+export function StatTiles({
+  totals,
+  days,
+  sourceName = "BIPAD",
+}: {
+  totals: Totals;
+  days: number;
+  sourceName?: string;
+}) {
   return (
     <section aria-labelledby="impact-heading">
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <h2 id="impact-heading" className="text-sm font-medium text-ink">
-          Incidents reported to BIPAD
+          Incidents reported to {sourceName}
         </h2>
         <p className="text-xs text-ink-secondary">
           Last {days} days. Not a national total, see below.
         </p>
       </div>
 
-      <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-edge bg-edge sm:grid-cols-3 lg:grid-cols-6">
+      <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-3xl border border-edge bg-edge sm:grid-cols-3">
         {TILES.map((tile) => {
           const value = totals[tile.key];
           return (
-            <div key={tile.key} className="bg-surface px-3 py-4">
-              <dt className="text-[11px] leading-tight text-ink-secondary">{tile.label}</dt>
+            <div key={tile.key} className="bg-surface px-4 py-5">
+              <dt className="readout">{tile.label}</dt>
               <dd
-                className="mt-1.5 text-2xl leading-none font-medium"
+                className="display tabular mt-3 text-[clamp(1.8rem,3vw,2.6rem)]"
                 style={{
                   // Deaths and missing persons carry the critical hue; the rest
                   // stay in ink so the eye lands on the gravest figure first.

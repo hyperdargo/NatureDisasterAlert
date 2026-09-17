@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { fetchJson } from "../fetch-upstream";
 import { getGeoIndex, resolveArea } from "./bipad-geo";
-import { isInNepal } from "../geo";
 import {
   EMPTY_CASUALTIES,
   type Casualties,
@@ -227,7 +226,10 @@ export async function fetchBipad(sinceIso: string): Promise<DisasterEvent[]> {
       casualties,
       metric: hazard?.title?.trim() || null,
       url: `https://bipadportal.gov.np/incidents/${inc.id}`,
-      inNepal: isInNepal(lat, lon),
+      // BIPAD only records incidents in Nepal. Border simplification must not
+      // move one into India, so the country is not re-derived from the point.
+      country: "NP",
+      inNepal: true,
     });
   }
   return events;

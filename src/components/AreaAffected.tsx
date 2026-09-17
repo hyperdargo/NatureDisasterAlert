@@ -16,6 +16,7 @@ const INITIAL_ROWS = 8;
 
 export function AreaAffected({
   districts,
+  // Nepal's 77 districts; this chart only exists for Nepal.
   totalDistricts = 77,
 }: {
   districts: DistrictCount[];

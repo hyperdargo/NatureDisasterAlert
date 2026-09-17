@@ -2,7 +2,7 @@
 
 import { GlobalNews } from "./GlobalNews";
 import { NewsFeed } from "./NewsFeed";
-import { useLiveFeed, type FeedPayload } from "@/hooks/useLiveFeed";
+import { useLiveFeed } from "@/hooks/useLiveFeed";
 import { useNow } from "@/hooks/useBrowserState";
 
 /**
@@ -12,14 +12,8 @@ import { useNow } from "@/hooks/useBrowserState";
  * context, not a warning. Keeping them here is what let the home tab shrink to
  * the question that matters in an emergency.
  */
-export function NewsView({
-  initial,
-  days,
-}: {
-  initial: FeedPayload;
-  days: number;
-}) {
-  const { data } = useLiveFeed(initial, days, false);
+export function NewsView({ days }: { days: number }) {
+  const { data } = useLiveFeed(days, false);
   // Ticks each minute, seeded from the server clock so the first render
   // matches on both sides and relative stamps age on their own.
   const now = useNow(Date.parse(data.generatedAt));
@@ -32,7 +26,7 @@ export function NewsView({
         {[0, 1, 2].map((key) => (
           <div
             key={key}
-            className="h-24 animate-pulse rounded-lg border border-edge bg-surface"
+            className="h-24 animate-pulse rounded-3xl border border-edge bg-surface"
           />
         ))}
       </div>
@@ -42,7 +36,7 @@ export function NewsView({
   return (
     <div className="space-y-8">
       <NewsFeed now={now} />
-      <GlobalNews events={data.global} now={now} />
+      <GlobalNews events={data.elsewhere} now={now} />
     </div>
   );
 }

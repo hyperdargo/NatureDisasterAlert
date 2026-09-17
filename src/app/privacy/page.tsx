@@ -67,9 +67,9 @@ const THIRD_PARTIES = [
 
 export default function PrivacyPage() {
   return (
-    <>
+    <div className="page">
       <div className="max-w-2xl">
-        <h1 className="text-2xl leading-tight font-medium tracking-tight text-ink sm:text-3xl">
+        <h1 className="display text-[clamp(2.4rem,6vw,4.5rem)] text-ink">
           Privacy
         </h1>
         <p className="mt-2 text-sm text-ink-secondary">
@@ -78,7 +78,7 @@ export default function PrivacyPage() {
         </p>
       </div>
 
-      <section className="mt-8 max-w-3xl rounded-lg border p-4 sm:p-5" style={{ borderColor: "var(--status-good)" }}>
+      <section className="mt-8 max-w-3xl rounded-3xl border p-4 sm:p-5" style={{ borderColor: "var(--status-good)" }}>
         <h2 className="flex items-center gap-2 text-base font-medium text-ink">
           <ShieldCheck size={19} weight="fill" className="text-good" aria-hidden />
           The short version
@@ -93,7 +93,7 @@ export default function PrivacyPage() {
 
       <section className="mt-8 max-w-3xl">
         <h2 className="text-sm font-medium text-ink">What is not collected</h2>
-        <dl className="mt-3 divide-y divide-edge overflow-hidden rounded-lg border border-edge bg-surface">
+        <dl className="mt-3 divide-y divide-edge overflow-hidden rounded-3xl border border-edge bg-surface">
           {COLLECTED.map((item) => (
             <div key={item.what} className="p-4 sm:p-5">
               <dt className="text-sm text-ink">{item.what}</dt>
@@ -105,7 +105,7 @@ export default function PrivacyPage() {
 
       <section className="mt-8 max-w-3xl">
         <h2 className="text-sm font-medium text-ink">How your location is used</h2>
-        <dl className="mt-3 divide-y divide-edge overflow-hidden rounded-lg border border-edge bg-surface">
+        <dl className="mt-3 divide-y divide-edge overflow-hidden rounded-3xl border border-edge bg-surface">
           {LOCATION.map((item) => (
             <div key={item.title} className="p-4 sm:p-5">
               <dt className="text-sm text-ink">{item.title}</dt>
@@ -120,7 +120,7 @@ export default function PrivacyPage() {
         <p className="mt-1 text-xs text-ink-secondary">
           The site draws on public data. This is who sees what.
         </p>
-        <div className="mt-3 overflow-x-auto rounded-lg border border-edge">
+        <div className="mt-3 overflow-x-auto rounded-3xl border border-edge">
           <table className="w-full min-w-[34rem] text-sm">
             <thead className="bg-raised text-ink-secondary">
               <tr>
@@ -160,6 +160,6 @@ export default function PrivacyPage() {
         </Link>
         .
       </p>
-    </>
+    </div>
   );
 }

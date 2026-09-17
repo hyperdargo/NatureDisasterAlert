@@ -20,9 +20,15 @@ import { Info } from "@phosphor-icons/react/dist/ssr";
  * directly beneath them, because a reader who takes "28 died" as the national
  * toll has been misled by us, not by the source.
  */
-export function CoverageNotice({ deathsInWindow }: { deathsInWindow: number }) {
+export function CoverageNotice({
+  deathsInWindow,
+  sourceName = "BIPAD",
+}: {
+  deathsInWindow: number;
+  sourceName?: string;
+}) {
   return (
-    <div className="flex items-start gap-2.5 rounded-lg border border-edge bg-surface px-4 py-3">
+    <div className="flex items-start gap-2.5 rounded-3xl border border-edge bg-surface px-5 py-4">
       <Info size={16} weight="fill" className="mt-px shrink-0 text-ink-muted" aria-hidden />
       <div className="min-w-0 text-xs leading-relaxed text-ink-secondary">
         <p>
@@ -30,14 +36,14 @@ export function CoverageNotice({ deathsInWindow }: { deathsInWindow: number }) {
             These are incident reports, not the national death toll.
           </strong>{" "}
           The {deathsInWindow.toLocaleString("en-US")} deaths above come from
-          individual reports filed to the government&rsquo;s BIPAD portal. That
+          individual reports filed to the government&rsquo;s {sourceName} portal. That
           log undercounts large disasters badly: during a major flood, national
           figures published by the press and the UN have been many times higher
           than the sum of these reports.
         </p>
         <p className="mt-1.5">
           Treat the numbers here as a floor and a guide to which districts are
-          being hit, not as a total. For national figures, see the news below
+          being hit, not as a total. For national figures, see the News tab
           and official statements from the NDRRMA.
         </p>
       </div>

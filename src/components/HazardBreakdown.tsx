@@ -11,7 +11,14 @@ import type { HazardCount } from "@/lib/stats";
  * the two quantities differ by an order of magnitude and a dual axis would
  * invite a false comparison. One axis, one encoding.
  */
-export function HazardBreakdown({ hazards }: { hazards: HazardCount[] }) {
+export function HazardBreakdown({
+  hazards,
+  showDeaths = true,
+}: {
+  hazards: HazardCount[];
+  /** False where no source counts deaths, so nothing reads as "no deaths". */
+  showDeaths?: boolean;
+}) {
   const [hovered, setHovered] = useState<string | null>(null);
 
   if (hazards.length === 0) {
@@ -33,7 +40,9 @@ export function HazardBreakdown({ hazards }: { hazards: HazardCount[] }) {
     <figure className="m-0">
       <h3 className="mb-1 text-sm font-medium text-ink">Hazards by frequency</h3>
       <p className="mb-4 text-xs text-ink-secondary">
-        Bar length is incidents logged. Deaths are listed separately.
+        {showDeaths
+          ? "Bar length is incidents logged. Deaths are listed separately."
+          : "Bar length is events tracked. No source here reports casualties."}
       </p>
 
       <ul className="space-y-2.5">
@@ -45,7 +54,7 @@ export function HazardBreakdown({ hazards }: { hazards: HazardCount[] }) {
               key={hazard.kind}
               onMouseEnter={() => setHovered(hazard.kind)}
               onMouseLeave={() => setHovered(null)}
-              className="grid grid-cols-[minmax(0,9.5rem)_1fr_auto] items-center gap-3 text-xs transition-opacity"
+              className={`grid ${showDeaths ? "grid-cols-[minmax(0,9.5rem)_1fr_auto]" : "grid-cols-[minmax(0,9.5rem)_1fr]"} items-center gap-3 text-xs transition-opacity`}
               style={{ opacity: dimmed ? 0.5 : 1 }}
             >
               <span className="truncate text-ink-secondary" title={hazard.label}>
@@ -65,24 +74,28 @@ export function HazardBreakdown({ hazards }: { hazards: HazardCount[] }) {
                 <span className="tabular text-ink-muted">{hazard.incidents}</span>
               </span>
 
-              <span
-                className="tabular whitespace-nowrap"
-                style={{
-                  color: hazard.dead > 0 ? "var(--status-critical)" : "var(--ink-muted)",
-                }}
-              >
-                {hazard.dead > 0 ? `${hazard.dead} died` : "no deaths"}
-              </span>
+              {showDeaths && (
+                <span
+                  className="tabular whitespace-nowrap"
+                  style={{
+                    color: hazard.dead > 0 ? "var(--status-critical)" : "var(--ink-muted)",
+                  }}
+                >
+                  {hazard.dead > 0 ? `${hazard.dead} died` : "no deaths"}
+                </span>
+              )}
             </li>
           );
         })}
       </ul>
 
+      {showDeaths && (
       <p className="mt-4 border-t border-edge pt-3 text-xs text-ink-secondary">
         {totalDead > 0
           ? `${totalDead} deaths across ${ranked.length} hazard types.`
           : "No deaths reported in this period."}
       </p>
+      )}
     </figure>
   );
 }

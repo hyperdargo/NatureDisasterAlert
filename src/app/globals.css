@@ -1,89 +1,61 @@
 @import "tailwindcss";
 
 /*
-  Palette provenance: validated with the data-viz six-check validator against
-  both surfaces (light #fcfcfb, dark #1a1a19). Categorical slots 1-3 pass all
-  pairs in both modes. Light-mode aqua sits at 2.74:1, below the 3:1 bar, so
-  every chart using it ships direct labels and a table view (the relief rule).
+  Mission control.
 
-  Colour discipline for this project: chrome is neutral. Hue is spent only on
-  danger and on data. A control that is merely interactive never takes colour,
-  so when something on screen is coloured, it means something.
+  A dark stage because this is read at night, in power cuts, on a phone turned
+  down to save battery, and because the live hazard marks are light sources:
+  they read as signals against black and as confetti against white.
+
+  Colour discipline, carried over and stricter: chrome is neutral. Hue is spent
+  on danger, on data, and on one accent, "ice", which means live or you (the
+  live indicator, your position, your country on the globe, focus). A control
+  that is merely interactive never takes colour.
+
+  Contrast, measured: ink 17.9:1, ink-secondary 9.6:1, ink-muted 6.6:1 on the
+  page; every status colour at least 6:1 on the raised surface; white on the
+  alarm red 5.0:1.
 */
 
 :root {
-  color-scheme: light;
-
-  --page: #f9f9f7;
-  --surface: #fcfcfb;
-  --surface-raised: #ffffff;
-
-  --ink: #0b0b0b;
-  --ink-secondary: #52514e;
-  --ink-muted: #898781;
-
-  --grid: #e1e0d9;
-  --axis: #c3c2b7;
-  --border: rgb(11 11 11 / 0.12);
-  --border-strong: rgb(11 11 11 / 0.22);
-
-  /* Reserved status scale. Never used for series identity. */
-  --status-good: #0ca30c;
-  --status-warning: #fab219;
-  --status-serious: #ec835a;
-  --status-critical: #d03b3b;
-
-  /* Categorical series, fixed order. Slot 1 doubles as the focus ring. */
-  --series-1: #2a78d6;
-  --series-2: #eb6834;
-  --series-3: #1baf7a;
-  --focus: #2a78d6;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-
-    --page: #0d0d0d;
-    --surface: #1a1a19;
-    --surface-raised: #212120;
-
-    --ink: #ffffff;
-    --ink-secondary: #c3c2b7;
-    --ink-muted: #898781;
-
-    --grid: #2c2c2a;
-    --axis: #383835;
-    --border: rgb(255 255 255 / 0.12);
-    --border-strong: rgb(255 255 255 / 0.24);
-
-    --series-1: #3987e5;
-    --series-2: #d95926;
-    --series-3: #199e70;
-    --focus: #3987e5;
-  }
-}
-
-:root[data-theme="dark"] {
   color-scheme: dark;
 
-  --page: #0d0d0d;
-  --surface: #1a1a19;
-  --surface-raised: #212120;
+  --page: #05070a;
+  --surface: #0b1016;
+  --surface-raised: #121922;
 
-  --ink: #ffffff;
-  --ink-secondary: #c3c2b7;
-  --ink-muted: #898781;
+  --ink: #eef2f6;
+  --ink-secondary: #a9b4c0;
+  --ink-muted: #8a95a3;
 
-  --grid: #2c2c2a;
-  --axis: #383835;
-  --border: rgb(255 255 255 / 0.12);
-  --border-strong: rgb(255 255 255 / 0.24);
+  --grid: #19212b;
+  --axis: #2b3643;
+  --border: rgb(170 195 220 / 0.11);
+  --border-strong: rgb(170 195 220 / 0.24);
 
-  --series-1: #3987e5;
-  --series-2: #d95926;
-  --series-3: #199e70;
-  --focus: #3987e5;
+  /* Reserved status scale. Never used for series identity. */
+  --status-good: #3ccf6e;
+  --status-warning: #ffc23d;
+  --status-serious: #ff9a5c;
+  --status-critical: #ff6259;
+
+  /* Filled danger surfaces with white text on them. */
+  --alarm: #d42d24;
+
+  /* The one accent: live, you, focus. */
+  --ice: #8fd3ff;
+
+  /* Categorical series, fixed order. */
+  --series-1: #5aa2f0;
+  --series-2: #e8773f;
+  --series-3: #2fb98a;
+  --focus: var(--ice);
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --gutter: clamp(16px, 4vw, 40px);
 }
 
 @theme inline {
@@ -101,17 +73,31 @@
   --color-warning: var(--status-warning);
   --color-serious: var(--status-serious);
   --color-critical: var(--status-critical);
+  --color-alarm: var(--alarm);
+  --color-ice: var(--ice);
   --color-series-1: var(--series-1);
   --color-series-2: var(--series-2);
   --color-series-3: var(--series-3);
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-mona), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --font-deva: var(--font-noto-deva);
+}
+
+html {
+  background: var(--page);
+  /* Anchor links land below the sticky bar, not under it. */
+  scroll-padding-top: 5rem;
 }
 
 body {
   background: var(--page);
+  color: var(--ink);
+  font-feature-settings: "ss01";
+}
+
+::selection {
+  background: color-mix(in srgb, var(--ice) 35%, transparent);
   color: var(--ink);
 }
 
@@ -120,10 +106,216 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/*
+  Display type. Mona Sans carries a width axis, which the home screen uses to
+  let a headline physically widen as it settles. Tracking stays at or above
+  -0.02em: tighter, and anti-aliased glyph edges overlap into hairlines.
+*/
+.display {
+  font-family: var(--font-sans);
+  font-weight: 640;
+  font-stretch: 112%;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+  text-wrap: balance;
+}
+
+/*
+  Instrument readout: small monospace data labels. Used only where the text
+  is data (a time, a distance, a source, a coordinate), never as decoration.
+*/
+.readout {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* Soft live pulse. Collapsed to a static dot for reduced motion below. */
+.live-dot {
+  position: relative;
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--ice);
+}
+.live-dot::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 1px solid var(--ice);
+  opacity: 0;
+  animation: live-ring 2.4s var(--ease-out) infinite;
+}
+@keyframes live-ring {
+  0% { transform: scale(0.4); opacity: 0.9; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+/* Film grain. Fixed, never on a scrolling layer, never interactive. */
+.grain {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
 :focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
-  border-radius: 2px;
+  border-radius: 4px;
+}
+
+/* Pressed feedback for anything tappable that opts in. */
+.press {
+  transition: transform 160ms var(--ease-out);
+}
+.press:active {
+  transform: scale(0.97);
+}
+
+/*
+  Page container for everything that is not a full-bleed home section.
+  Bottom padding clears the fixed tab bar and emergency button on phones.
+*/
+.page {
+  width: 100%;
+  max-width: 1400px;
+  margin-inline: auto;
+  /* The floating header overlaps the top of main; clear it. */
+  padding: calc(4.25rem + 2rem) var(--gutter) 2rem;
+}
+
+/*
+  The status stage. On phones: a globe band with the answer overlapping its
+  lower edge, nothing pinned. On wide, tall screens with motion allowed: the
+  globe is pinned for the height of the answer plus a runway the dive plays
+  over. Short viewports never pin, so nobody gets trapped in a stage.
+*/
+.dive-pin {
+  height: 46svh;
+}
+.dive-content {
+  margin-top: -9svh;
+}
+@media (min-width: 768px) and (min-height: 600px) {
+  .dive-stage {
+    height: calc(100dvh + 130vh);
+  }
+  .dive-pin {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+  }
+  .dive-content {
+    margin-top: -100dvh;
+  }
+  .dive-column {
+    min-height: 100dvh;
+  }
+}
+/*
+  The map rises into the end of the dive instead of waiting for the pinned
+  stage to scroll away, which left a screen of nothing between them.
+*/
+@media (min-width: 768px) and (min-height: 600px) and (prefers-reduced-motion: no-preference) {
+  .after-dive {
+    margin-top: -32vh;
+  }
+}
+@media (min-width: 768px) and (min-height: 600px) and (prefers-reduced-motion: reduce) {
+  .dive-stage {
+    height: auto;
+  }
+  .dive-pin {
+    position: absolute;
+    inset: 0 0 auto 0;
+  }
+  .dive-content {
+    margin-top: 0;
+  }
+}
+
+/*
+  "How a warning gets here". The line's length is --drawn (0..1), written from
+  scroll. Vertical on phones, horizontal through the nodes on wider screens.
+  Reduced motion shows it fully drawn.
+*/
+.how-track {
+  position: absolute;
+  left: 7px;
+  top: 6px;
+  bottom: 6px;
+  width: 1px;
+  background: var(--border);
+}
+.how-line {
+  --drawn: 0;
+  position: absolute;
+  inset: 0;
+  background: var(--ice);
+  transform-origin: top;
+  transform: scaleY(var(--drawn));
+}
+.how-node {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--page);
+  transition: background-color 300ms var(--ease-out), border-color 300ms var(--ease-out), box-shadow 300ms var(--ease-out);
+}
+.how-stop[data-reached="true"] .how-node {
+  background: var(--ice);
+  border-color: var(--ice);
+  box-shadow: 0 0 18px rgb(143 211 255 / 0.55);
+}
+.how-stop .readout,
+.how-stop h3 {
+  transition: color 300ms var(--ease-out);
+}
+.how-stop[data-reached="true"] .readout {
+  color: var(--ice);
+}
+@media (min-width: 768px) {
+  .how-track {
+    left: 0;
+    right: 0;
+    top: 7px;
+    bottom: auto;
+    width: auto;
+    height: 1px;
+  }
+  .how-line {
+    transform-origin: left;
+    transform: scaleX(var(--drawn));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .how-line {
+    transform: none;
+  }
+  .how-stop .how-node {
+    background: var(--ice);
+    border-color: var(--ice);
+  }
+}
+
+/* Hide scrollbars on horizontal snap rails; they remain scrollable. */
+.rail {
+  scrollbar-width: none;
+}
+.rail::-webkit-scrollbar {
+  display: none;
 }
 
 /* MapLibre ships its own light chrome; bring its popups onto our surface. */
@@ -131,23 +323,31 @@ body {
   background: var(--surface-raised) !important;
   color: var(--ink) !important;
   border: 1px solid var(--border) !important;
-  border-radius: 8px !important;
+  border-radius: 10px !important;
   padding: 0 !important;
-  box-shadow: 0 12px 32px rgb(0 0 0 / 0.24) !important;
+  box-shadow: 0 16px 40px rgb(0 0 0 / 0.5) !important;
 }
 .maplibregl-popup-tip {
   border-top-color: var(--surface-raised) !important;
   border-bottom-color: var(--surface-raised) !important;
 }
+.maplibregl-popup-close-button {
+  color: var(--ink-secondary) !important;
+  font-size: 18px !important;
+  padding: 2px 8px !important;
+}
 .maplibregl-ctrl-group {
   background: var(--surface-raised) !important;
   border: 1px solid var(--border) !important;
 }
+.maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+  filter: invert(1);
+}
 .maplibregl-ctrl-attrib {
-  background: rgb(0 0 0 / 0.55) !important;
+  background: rgb(0 0 0 / 0.6) !important;
 }
 .maplibregl-ctrl-attrib a {
-  color: #e6e6e6 !important;
+  color: #d8dee6 !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -157,5 +357,9 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .live-dot::after {
+    display: none;
   }
 }

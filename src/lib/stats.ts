@@ -1,7 +1,8 @@
+import { profileFor } from "./countries/profiles";
 import { HAZARD_LABEL, type DisasterEvent, type HazardKind } from "./types";
 
 export interface DayPoint {
-  /** YYYY-MM-DD in Nepal time. */
+  /** YYYY-MM-DD in the country's primary time zone. */
   date: string;
   dead: number;
   missing: number;
@@ -37,7 +38,16 @@ export interface DistrictCount {
 }
 
 export interface Stats {
-  /** Verified totals. Sourced from BIPAD only - see note below. */
+  country: string;
+  /**
+   * True only where a source reports verified casualties (Nepal, via BIPAD).
+   * Everywhere else the casualty fields are zero because nothing was counted,
+   * not because nobody was hurt, and the interface must not show them.
+   */
+  casualtiesReported: boolean;
+  /** The time zone days were bucketed in. */
+  timeZone: string;
+  /** Verified totals where casualtiesReported; otherwise only `incidents`. */
   totals: Totals;
   series: DayPoint[];
   byHazard: HazardCount[];
@@ -51,7 +61,7 @@ export interface Stats {
 }
 
 /**
- * Casualty totals are computed from BIPAD alone.
+ * Casualty totals are computed from BIPAD alone, and so exist only for Nepal.
  *
  * The other feeds publish modelled estimates (GDACS exposure models) or no
  * loss data at all (USGS, EONET). Summing a modelled exposure figure into a
@@ -60,15 +70,38 @@ export interface Stats {
  */
 const VERIFIED_SOURCE = "bipad";
 
-const nepalDay = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "Asia/Kathmandu",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-});
+const NO_LOSS = {
+  dead: null,
+  missing: null,
+  injured: null,
+  affected: null,
+  displaced: null,
+  housesDestroyed: null,
+} as const;
 
-export function computeStats(events: DisasterEvent[], days: number): Stats {
-  const verified = events.filter((e) => e.source === VERIFIED_SOURCE);
+function dayFormatter(timeZone: string) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+}
+
+/**
+ * Statistics for one country.
+ *
+ * Where verified casualty reports exist, everything is computed from them. For
+ * every other country the counts are of events tracked by the global feeds in
+ * that country, and `casualtiesReported` is false.
+ */
+export function computeStats(events: DisasterEvent[], days: number, country = "NP"): Stats {
+  const profile = profileFor(country);
+  const inCountry = events.filter((e) => e.country === country);
+  const verified = profile.casualties
+    ? inCountry.filter((e) => e.source === VERIFIED_SOURCE)
+    : inCountry;
+  const localDay = dayFormatter(profile.timeZone);
 
   const totals: Totals = {
     dead: 0,
@@ -83,7 +116,7 @@ export function computeStats(events: DisasterEvent[], days: number): Stats {
   // Pre-seed every day in the window so the axis has no invisible gaps.
   const buckets = new Map<string, DayPoint>();
   for (let i = days - 1; i >= 0; i--) {
-    const date = nepalDay.format(new Date(Date.now() - i * 86_400_000));
+    const date = localDay.format(new Date(Date.now() - i * 86_400_000));
     buckets.set(date, { date, dead: 0, missing: 0, injured: 0 });
   }
 
@@ -91,7 +124,8 @@ export function computeStats(events: DisasterEvent[], days: number): Stats {
   const districts = new Map<string, DistrictCount & { _municipalities: Set<string> }>();
 
   for (const e of verified) {
-    const c = e.casualties;
+    // Global feeds carry modelled exposure at best; never sum it as a count.
+    const c = profile.casualties ? e.casualties : NO_LOSS;
     totals.dead += c.dead ?? 0;
     totals.missing += c.missing ?? 0;
     totals.injured += c.injured ?? 0;
@@ -99,7 +133,7 @@ export function computeStats(events: DisasterEvent[], days: number): Stats {
     totals.displaced += c.displaced ?? 0;
     totals.housesDestroyed += c.housesDestroyed ?? 0;
 
-    const day = buckets.get(nepalDay.format(new Date(e.occurredAt)));
+    const day = buckets.get(localDay.format(new Date(e.occurredAt)));
     if (day) {
       day.dead += c.dead ?? 0;
       day.missing += c.missing ?? 0;
@@ -139,8 +173,8 @@ export function computeStats(events: DisasterEvent[], days: number): Stats {
     }
   }
 
-  const estimatedAffected = events
-    .filter((e) => e.source === "gdacs" && e.inNepal)
+  const estimatedAffected = inCountry
+    .filter((e) => e.source === "gdacs")
     .reduce((sum, e) => sum + (e.casualties.affected ?? 0), 0);
 
   const byDistrict = [...districts.values()]
@@ -151,6 +185,9 @@ export function computeStats(events: DisasterEvent[], days: number): Stats {
     .sort((a, b) => b.dead - a.dead || b.incidents - a.incidents);
 
   return {
+    country,
+    casualtiesReported: profile.casualties,
+    timeZone: profile.timeZone,
     totals,
     series: [...buckets.values()],
     byHazard: [...hazards.values()].sort(

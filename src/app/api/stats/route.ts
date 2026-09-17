@@ -19,13 +19,13 @@ export async function GET(request: Request) {
   if (!query.success) {
     return NextResponse.json({ error: "Invalid query parameters." }, { status: 400, headers: corsHeaders(request) });
   }
-  const { days } = query.data;
+  // No country means Nepal, which is what installed Android apps ask for.
+  const { days, country = "NP" } = query.data;
 
   try {
     const feed = await getFeed(days);
-    const nepalEvents = feed.events.filter((e) => e.inNepal);
     return NextResponse.json(
-      { ...computeStats(nepalEvents, days), days, generatedAt: feed.generatedAt },
+      { ...computeStats(feed.events, days, country), days, generatedAt: feed.generatedAt },
       { headers: { "cache-control": "public, s-maxage=300, stale-while-revalidate=900", ...corsHeaders(request) } },
     );
   } catch (error) {

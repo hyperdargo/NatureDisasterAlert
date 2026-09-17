@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { apiUrl } from "@/lib/api-base";
+import { profileFor } from "@/lib/countries/profiles";
+import { useCountry } from "./CountryProvider";
 import { Path, Phone, Warning } from "@phosphor-icons/react/dist/ssr";
 
 /**
@@ -30,11 +32,14 @@ interface Advisory {
 }
 
 export function RoadAdvisory({ days }: { days: number }) {
+  const country = useCountry();
+  const supported = country.code ? profileFor(country.code).roads : false;
   const [advisory, setAdvisory] = useState<Advisory | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
+    if (!supported) return;
     let cancelled = false;
     let retry: ReturnType<typeof setTimeout> | undefined;
 
@@ -75,7 +80,24 @@ export function RoadAdvisory({ days }: { days: number }) {
       cancelled = true;
       clearTimeout(retry);
     };
-  }, [days]);
+  }, [days, supported]);
+
+  if (!supported) {
+    return (
+      <section className="max-w-3xl rounded-3xl border border-edge bg-surface p-6">
+        <h2 className="text-lg font-semibold text-ink">
+          No road advisory for {country.info?.name ?? "this country"}
+        </h2>
+        <p className="mt-3 text-sm leading-relaxed text-ink-secondary">
+          The advisory names highways near reported landslides and floods, which needs
+          incident reports with precise locations. Only Nepal&rsquo;s national record provides
+          those to this app. Guessing from the coarse global alerts elsewhere could send someone
+          onto a road nobody has checked, so the page says so instead. Check your national road
+          or traffic authority before travelling in bad weather.
+        </p>
+      </section>
+    );
+  }
 
   const hasRoads = (advisory?.roads.length ?? 0) > 0;
   const hasDamage = (advisory?.reportedDamage.length ?? 0) > 0;
@@ -93,7 +115,7 @@ export function RoadAdvisory({ days }: { days: number }) {
         <p className="text-xs text-ink-secondary">Last {days} days</p>
       </div>
 
-      <div className="rounded-lg border border-edge bg-surface">
+      <div className="rounded-3xl border border-edge bg-surface">
         {/* The disclaimer sits above the data, not buried under it. */}
         <div
           className="flex items-start gap-2 border-b border-edge px-4 py-3"
@@ -192,7 +214,7 @@ export function RoadAdvisory({ days }: { days: number }) {
 
           <a
             href="tel:103"
-            className="mt-4 flex min-h-12 items-center justify-center gap-2 rounded-lg border border-edge-strong text-sm font-medium text-ink transition-transform active:translate-y-px"
+            className="mt-4 flex min-h-12 items-center justify-center gap-2 rounded-3xl border border-edge-strong text-sm font-medium text-ink transition-transform active:translate-y-px"
           >
             <Phone size={16} weight="fill" aria-hidden />
             Call Traffic Police 103 for road conditions

@@ -22,8 +22,20 @@ export const metadata: Metadata = {
  */
 const FAQS = [
   {
+    q: "How does it know which country I am in?",
+    a: "It starts with a guess from your device's time zone, which needs no permission and sends nothing anywhere. If you share your location, your position is matched against country borders inside your browser, and that replaces the guess. You can always choose a country yourself from the button at the top of every page, and that choice wins: if your location later says you have crossed a border, the site asks before switching, because emergency numbers changing on their own would be worse than a one-tap question.",
+  },
+  {
+    q: "Can I trust the emergency numbers?",
+    a: "Each country's numbers carry a label saying how far they can be trusted. About fifty countries, including every EU member state, India, Nepal, the United States, Bangladesh, Pakistan and Sri Lanka, were checked against a government or official page, which is linked beside the numbers with the date it was checked. The rest come from Wikipedia's list of emergency telephone numbers, a well-maintained compiled list that is still not an official source, and are labelled 'confirm locally'. Where no numbers are known at all, the site says so rather than guessing.",
+  },
+  {
+    q: "Why do some countries show more than others?",
+    a: "Because the public data differs. Every country gets earthquakes from the USGS, multi-hazard alerts from GDACS, satellite detections from NASA, nearby hospitals from OpenStreetMap and a news search. Nepal also gets the government's incident record with verified casualty figures, district tables and a road advisory. India gets official warnings from the National Disaster Management Authority's SACHET feed, and the United States gets active alerts from the National Weather Service. The site says which of these it is showing for your country instead of making every country look the same.",
+  },
+  {
     q: "Why are the death figures here lower than the news?",
-    a: "Because they are counting different things. The figures on this site count individual incident reports filed to BIPAD, the Government of Nepal's disaster portal. That log undercounts mass-casualty disasters severely: across one entire monsoon it recorded 196 deaths, never more than seven in a day, while international press reported roughly 1,300 dead from a single flood. No feed this site can reach publishes the authoritative national toll. Treat these numbers as a floor and a guide to which districts are being hit, never as a national total. Press coverage is shown alongside them for that reason.",
+    a: "Because they are counting different things. The figures on this site count individual incident reports filed to BIPAD, the Government of Nepal's disaster portal. That log undercounts mass-casualty disasters severely: across one entire monsoon it recorded 196 deaths, never more than seven in a day, while international press reported roughly 1,300 dead from a single flood. No feed this site can reach publishes the authoritative national toll. Treat these numbers as a floor and a guide to which districts are being hit, never as a national total. Press coverage is shown alongside them for that reason. Outside Nepal, no source available to the site counts casualties, so no death figures are shown at all.",
   },
   {
     q: "Why is there no safe route or road closure feature?",
@@ -31,7 +43,7 @@ const FAQS = [
   },
   {
     q: "Is this an official government service?",
-    a: "No. It aggregates public feeds from the Government of Nepal's BIPAD portal, the USGS, GDACS run by the European Commission, and NASA. It is not operated by any of them and is not an official warning service. In an emergency, instructions from local authorities and the National Disaster Risk Reduction and Management Authority take precedence over anything shown here.",
+    a: "No. It aggregates public feeds: the USGS, GDACS run by the European Commission, NASA, the Government of Nepal's BIPAD portal, India's NDMA SACHET and the US National Weather Service. It is not operated by any of them and is not an official warning service. In an emergency, instructions from local authorities take precedence over anything shown here.",
   },
   {
     q: "Does it track me or store my location?",
@@ -51,11 +63,11 @@ const FAQS = [
   },
   {
     q: "Why is snakebite listed as a disaster?",
-    a: "Because in the incident record it kills more people than any other hazard. It is not dramatic and it rarely makes the news, but during the monsoon it is the leading recorded cause of death in the data this site draws on, mostly at night in the Terai. The guidance page leads with it for the same reason.",
+    a: "Because in Nepal's incident record it kills more people than any other hazard. It is not dramatic and it rarely makes the news, but during the monsoon it is the leading recorded cause of death in that data, mostly at night in the Terai. The guidance page includes it for the same reason, and lists it first wherever snakebites are being reported.",
   },
   {
     q: "Can I use this data or the code?",
-    a: "The underlying data belongs to its publishers and each carries its own terms: BIPAD, the USGS, GDACS and NASA are all public sources, and OpenStreetMap data is available under the Open Database Licence. Please credit them rather than this site. For the code or for working together, get in touch.",
+    a: "The underlying data belongs to its publishers and each carries its own terms: BIPAD, SACHET, the National Weather Service, the USGS, GDACS and NASA are all public sources, emergency numbers marked as compiled come from Wikipedia under CC BY-SA 4.0, country borders come from Natural Earth, and OpenStreetMap data is available under the Open Database Licence. Please credit them rather than this site. For the code or for working together, get in touch.",
   },
 ] as const;
 
@@ -72,14 +84,14 @@ export default function FaqPage() {
   };
 
   return (
-    <>
+    <div className="page">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
       <div className="max-w-2xl">
-        <h1 className="text-2xl leading-tight font-medium tracking-tight text-ink sm:text-3xl">
+        <h1 className="display text-[clamp(2.4rem,6vw,4.5rem)] text-ink">
           Questions
         </h1>
         <p className="mt-2 text-sm text-ink-secondary">
@@ -88,7 +100,7 @@ export default function FaqPage() {
         </p>
       </div>
 
-      <div className="mt-8 max-w-3xl divide-y divide-edge overflow-hidden rounded-lg border border-edge bg-surface">
+      <div className="mt-8 max-w-3xl divide-y divide-edge overflow-hidden rounded-3xl border border-edge bg-surface">
         {FAQS.map((item) => (
           <details key={item.q} className="group">
             <summary className="cursor-pointer list-none px-4 py-4 text-sm font-medium text-ink marker:hidden hover:bg-raised sm:px-5">
@@ -117,6 +129,6 @@ export default function FaqPage() {
         </Link>{" "}
         for what is and is not collected.
       </p>
-    </>
+    </div>
   );
 }

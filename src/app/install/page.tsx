@@ -45,9 +45,9 @@ const IOS_STEPS = [
 
 export default function InstallPage() {
   return (
-    <>
+    <div className="page">
         <div className="max-w-2xl">
-          <h1 className="text-2xl leading-tight font-medium tracking-tight text-ink sm:text-3xl">
+          <h1 className="display text-[clamp(2.4rem,6vw,4.5rem)] text-ink">
             Install the app
           </h1>
           <p className="mt-2 text-sm text-ink-secondary">
@@ -60,7 +60,7 @@ export default function InstallPage() {
         <div className="mt-8 grid gap-4 lg:grid-cols-2">
           <section
             aria-labelledby="android-heading"
-            className="rounded-lg border border-edge bg-surface p-5"
+            className="rounded-3xl border border-edge bg-surface p-5"
           >
             <h2
               id="android-heading"
@@ -78,7 +78,7 @@ export default function InstallPage() {
               {...(APK_IS_LOCAL
                 ? { download: "nature-disaster-alert.apk" }
                 : { target: "_blank", rel: "noopener noreferrer" })}
-              className="mt-4 flex min-h-12 items-center justify-center gap-2 rounded-lg border border-transparent bg-ink px-4 text-sm font-medium text-page transition-transform active:translate-y-px"
+              className="mt-4 flex min-h-12 items-center justify-center gap-2 rounded-3xl border border-transparent bg-ink px-4 text-sm font-medium text-page transition-transform active:translate-y-px"
             >
               <DownloadSimple size={17} weight="bold" aria-hidden />
               Download for Android
@@ -108,7 +108,7 @@ export default function InstallPage() {
 
           <section
             aria-labelledby="ios-heading"
-            className="rounded-lg border border-edge bg-surface p-5"
+            className="rounded-3xl border border-edge bg-surface p-5"
           >
             <h2
               id="ios-heading"
@@ -160,7 +160,7 @@ export default function InstallPage() {
           </section>
         </div>
 
-        <section className="mt-8 rounded-lg border border-edge bg-surface p-5">
+        <section className="mt-8 rounded-3xl border border-edge bg-surface p-5">
           <h2 className="flex items-center gap-2 text-sm font-medium text-ink">
             <WifiSlash size={16} weight="duotone" aria-hidden />
             What you get once it is installed
@@ -189,6 +189,6 @@ export default function InstallPage() {
             <ArrowSquareOut size={13} aria-hidden />
           </Link>
         </section>
-    </>
+    </div>
   );
 }

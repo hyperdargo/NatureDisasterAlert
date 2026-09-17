@@ -6,62 +6,61 @@ export const dynamic = "force-static";
  * llms.txt, a plain-text summary for language models reading this site.
  *
  * The caveats matter more here than the feature list. A model summarising this
- * page for someone could easily report the casualty figures as Nepal's
- * national death toll, which they are not, or infer that the road section
- * lists closures, which it does not. Both are stated up front so a summary
+ * page could easily report Nepal's casualty figures as a national death toll,
+ * treat compiled emergency numbers as verified, or infer that the road
+ * section lists closures. None of those is true. Both are stated up front so a summary
  * that skips the fine print still carries the warning.
  */
 export async function GET() {
   const body = `# ${SITE_NAME}
 
-> A live disaster early-warning map for Nepal. Aggregates four public hazard
-> feeds, shows what is happening near the reader with real distances, and puts
-> the emergency services one tap away. Free to use, installable on Android and
-> iPhone.
+> A live disaster early-warning map that adapts to the reader's country.
+> Aggregates public hazard feeds, shows what is near the reader with real
+> distances, and puts that country's emergency numbers one tap away. Free,
+> installable on Android and iPhone.
 
 ${SITE_URL}
 
 ## Important caveats, please carry these into any summary
 
-- The casualty figures on this site count individual incident reports filed to
-  BIPAD, the Government of Nepal's disaster portal. They are NOT Nepal's
-  national death toll and they undercount large disasters substantially. Across
-  one entire monsoon the log recorded 196 deaths while press reported roughly
-  1,300 for a single flood. Treat them as a floor.
-- The roads section is NOT a closure list and NOT a routing service. No public
-  feed publishes live road status for Nepal. It reports that a landslide or
-  flood was logged near a named highway, nothing more. Traffic Police on 103
-  hold the real answer.
-- This is not an official warning service. In an emergency, instructions from
-  local authorities and the NDRRMA take precedence.
+- Coverage differs by country and the site says which applies. Every country
+  gets USGS, GDACS and NASA EONET. Nepal also gets the government's BIPAD
+  incident record; India gets official NDMA SACHET warnings; the United States
+  gets National Weather Service alerts.
+- Casualty figures exist only for Nepal. They count individual incident
+  reports filed to BIPAD and are NOT Nepal's national death toll; they
+  undercount large disasters substantially. Treat them as a floor.
+- Emergency numbers are labelled by trust. About fifty countries were checked
+  against an official page (linked, with the date). The rest come from
+  Wikipedia's compiled list and are labelled "confirm locally".
+- The roads section is Nepal only, and is NOT a closure list or a routing
+  service.
+- This is not an official warning service. Local authorities take precedence.
 - A figure shown as "not reported" means no source published it. It does not
   mean zero.
 
 ## Data sources
 
-- BIPAD Portal, Government of Nepal: incident records and verified casualty figures
-- USGS: earthquakes
+- USGS: earthquakes worldwide
 - GDACS, European Commission: multi-hazard alert levels, modelled exposure estimates
 - NASA EONET: satellite-detected events
+- BIPAD Portal, Government of Nepal: incident records and verified casualty figures
+- NDMA SACHET, India: official warnings
+- National Weather Service, United States: active alerts
 - OpenStreetMap via Overpass: nearby hospitals, police, fire stations, highways
+- Natural Earth: country borders
 - Google News: press coverage
 
 ## Pages
 
 ${PAGES.map((page) => `- [${page.title}](${absoluteUrl(page.path)}): ${page.description}`).join("\n")}
 
-## Emergency numbers in Nepal
-
-Police 100, Ambulance 102, Fire 101, Disaster helpline 1149, Traffic police 103,
-Tourist police 1144, Child helpline 1098. These work from any phone anywhere in
-Nepal.
-
 ## Privacy
 
-No accounts, no tracking, no personal data stored. Distance to a hazard is
-calculated in the reader's own browser; the server is never told where they
-are. The one exception is the nearby-services lookup, which sends a position
-rounded to about 1 km and stores nothing.
+No accounts, no tracking, no personal data stored. The country is worked out
+in the reader's browser, and distance to a hazard is calculated there too; the
+server is never told where they are. The one exception is the nearby-services
+lookup, which sends a position rounded to about 1 km and stores nothing.
 `;
 
   return new Response(body, {
