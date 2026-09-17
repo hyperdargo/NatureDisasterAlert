@@ -3,12 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  DownloadSimple,
   House,
   ListBullets,
   Newspaper,
   Path,
   ShieldCheck,
 } from "@phosphor-icons/react/dist/ssr";
+import { useCountry } from "./CountryProvider";
+import { profileFor } from "@/lib/countries/profiles";
 
 /**
  * Bottom tab bar, the primary navigation on a phone.
@@ -22,21 +25,27 @@ import {
  * convention every phone user already knows. Hidden on wide screens, where the
  * header navigation is the better fit.
  */
-const TABS = [
+const BASE = [
   { href: "/", label: "Near me", icon: House },
   { href: "/incidents", label: "Incidents", icon: ListBullets },
   { href: "/news", label: "News", icon: Newspaper },
-  { href: "/roads", label: "Roads", icon: Path },
-  { href: "/prepare", label: "Prepare", icon: ShieldCheck },
 ] as const;
+
+/** Roads needs incident-level data, so only countries that have it get the tab. */
+const ROADS = { href: "/roads", label: "Roads", icon: Path } as const;
+const INSTALL = { href: "/install", label: "Install", icon: DownloadSimple } as const;
+const PREPARE = { href: "/prepare", label: "Prepare", icon: ShieldCheck } as const;
 
 export function TabBar() {
   const pathname = usePathname();
+  const { code } = useCountry();
+  const roads = code ? profileFor(code).roads : false;
+  const TABS = [...BASE, roads ? ROADS : INSTALL, PREPARE];
 
   return (
     <nav
       aria-label="Sections"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-edge bg-page/95 backdrop-blur-sm md:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-edge bg-page/85 backdrop-blur-xl lg:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       <ul className="mx-auto flex max-w-lg">
@@ -50,7 +59,7 @@ export function TabBar() {
                 href={tab.href}
                 aria-current={active ? "page" : undefined}
                 className="flex min-h-14 flex-col items-center justify-center gap-1 px-1 py-1.5 transition-colors"
-                style={{ color: active ? "var(--ink)" : "var(--ink-muted)" }}
+                style={{ color: active ? "var(--ice)" : "var(--ink-muted)" }}
               >
                 <tab.icon size={21} weight={active ? "fill" : "regular"} aria-hidden />
                 <span className="text-[10px] leading-none">{tab.label}</span>

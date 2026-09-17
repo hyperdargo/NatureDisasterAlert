@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { ExpressionSpecification, GeoJSONSource, Map as MapLibreMap } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { NEPAL_CENTER } from "@/lib/geo";
 import { SEVERITY_STYLE } from "@/lib/display";
 import type { Coords } from "@/hooks/useGeolocation";
 import type { DisasterEvent } from "@/lib/types";
@@ -14,10 +13,7 @@ import type { DisasterEvent } from "@/lib/types";
  * third party; they are public static images and carry no user data beyond
  * the area being viewed.
  */
-const STYLES = {
-  dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
-  light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
-} as const;
+const STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
 
 const SOURCE_ID = "hazards";
 const USER_SOURCE_ID = "viewer";
@@ -97,13 +93,18 @@ function escapeHtml(value: string): string {
 export function HazardMap({
   events,
   viewer,
+  view,
 }: {
   events: DisasterEvent[];
   viewer: Coords | null;
+  /** The country's opening view. Changing country moves the map there. */
+  view: { center: [number, number]; zoom: number };
 }) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const centred = useRef(false);
+  // Read once at creation; later changes are applied by the effect below.
+  const initialView = useRef(view);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
 
@@ -165,16 +166,14 @@ export function HazardMap({
       // See scripts/sync-maplibre-worker.mjs for why.
       setWorkerUrl("/maplibre/maplibre-gl-csp-worker.js");
 
-      const prefersDark =
-        window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? true;
-      const ringColor = prefersDark ? "#1a1a19" : "#fcfcfb";
+      const ringColor = "#05070a";
 
       // A non-null local keeps every handler below correctly narrowed.
       const mapInstance = new Map({
         container: container.current,
-        style: prefersDark ? STYLES.dark : STYLES.light,
-        center: [NEPAL_CENTER.lon, NEPAL_CENTER.lat],
-        zoom: 6,
+        style: STYLE,
+        center: initialView.current.center,
+        zoom: initialView.current.zoom,
         attributionControl: { compact: true },
       });
       instance = mapInstance;
@@ -228,7 +227,7 @@ export function HazardMap({
             "circle-radius": 6,
             "circle-color": "#ffffff",
             "circle-stroke-width": 3,
-            "circle-stroke-color": "#2a78d6",
+            "circle-stroke-color": "#8fd3ff",
           },
         });
 
@@ -312,6 +311,15 @@ export function HazardMap({
     });
   }, [viewer, ready]);
 
+  // A new country moves the map, unless it is already following the viewer.
+  const viewKey = `${view.center.join(",")}:${view.zoom}`;
+  useEffect(() => {
+    if (!ready || !map.current || centred.current) return;
+    map.current.jumpTo({ center: view.center, zoom: view.zoom });
+    // viewKey stands in for the view object, which is rebuilt every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewKey, ready]);
+
   // Centre on the viewer once, then leave their pan and zoom alone.
   useEffect(() => {
     if (!ready || !map.current || !viewer || centred.current) return;
@@ -326,18 +334,18 @@ export function HazardMap({
 
   if (failed) {
     return (
-      <div className="flex h-full min-h-[320px] items-center justify-center rounded-lg border border-edge bg-surface p-6 text-center text-sm text-ink-secondary">
-        The map could not load. The hazard list below still works.
+      <div className="flex h-full min-h-[320px] items-center justify-center rounded-3xl border border-edge bg-surface p-6 text-center text-sm text-ink-secondary">
+        The map could not load. The status above and the incident log still work.
       </div>
     );
   }
 
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-lg border border-edge bg-surface">
+    <div className="relative h-full w-full overflow-hidden rounded-3xl border border-edge bg-surface">
       <div ref={container} className="h-full w-full" />
       {!ready && (
         <div className="absolute inset-0 grid place-items-center bg-surface">
-          <p className="text-xs text-ink-muted">
+          <p className="readout">
             {inView ? "Loading map" : "Map loads when you scroll to it"}
           </p>
         </div>

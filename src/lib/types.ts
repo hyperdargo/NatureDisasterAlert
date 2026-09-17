@@ -88,6 +88,17 @@ export const DisasterEvent = z.object({
   /** Source-specific headline metric, already formatted for display. */
   metric: z.string().nullable(),
   url: z.string().url().nullable(),
+  /**
+   * ISO 3166-1 alpha-2 code of the country the event is in, or null at sea
+   * and in disputed areas. Resolved on the server against Natural Earth
+   * borders, falling back to the country name a source gives.
+   */
+  country: z.string().length(2).nullable(),
+  /**
+   * Kept for Android apps already installed, which filter on this field. An
+   * older app reading a payload without it would see an empty Nepal list and
+   * report no hazards nearby. Always equal to `country === "NP"`.
+   */
   inNepal: z.boolean(),
   /** Administrative area, resolved from the reporting ward. Nepal only. */
   area: Area.nullable(),
@@ -126,3 +137,28 @@ export const SEVERITY_LABEL: Record<Severity, string> = {
   serious: "Warning",
   critical: "Emergency",
 };
+
+/**
+ * An official warning issued by a national agency: a forecast or advisory,
+ * not a report of something that happened. Kept apart from DisasterEvent so a
+ * warning can never be counted as an incident or given casualty figures.
+ */
+export interface OfficialWarning {
+  id: string;
+  source: "sachet" | "nws";
+  /** The warning text as issued, trimmed. */
+  title: string;
+  /** e.g. "Flood Warning". Null when the feed does not classify it. */
+  event: string | null;
+  /**
+   * Null when the feed publishes no severity. Never guessed: an unclassified
+   * warning is shown as a warning, not as the lowest level.
+   */
+  severity: Severity | null;
+  area: string | null;
+  /** The issuing office, e.g. "NWS Tulsa OK" or "CWC". */
+  agency: string | null;
+  issuedAt: string;
+  expiresAt: string | null;
+  url: string | null;
+}

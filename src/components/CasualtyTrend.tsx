@@ -1,7 +1,10 @@
 "use client";
 
 import { useId, useState } from "react";
-import { nepalDate } from "@/lib/display";
+import { localDate } from "@/lib/display";
+
+/** Series dates are already local calendar days; format them as written. */
+const dayLabel = (date: string) => localDate("UTC").format(new Date(`${date}T12:00:00Z`));
 import type { DayPoint } from "@/lib/stats";
 
 /**
@@ -71,7 +74,7 @@ export function CasualtyTrend({ series }: { series: DayPoint[] }) {
               {[...series].reverse().map((d) => (
                 <tr key={d.date} className="border-t border-edge">
                   <th scope="row" className="p-2 text-left font-normal text-ink-secondary">
-                    {nepalDate.format(new Date(`${d.date}T06:00:00Z`))}
+                    {dayLabel(d.date)}
                   </th>
                   {SERIES.map((s) => (
                     <td
@@ -165,8 +168,8 @@ export function CasualtyTrend({ series }: { series: DayPoint[] }) {
           </div>
 
           <div className="mt-2 flex justify-between text-[10px] tabular text-ink-muted">
-            <span>{nepalDate.format(new Date(`${series[0].date}T06:00:00Z`))}</span>
-            <span>{nepalDate.format(new Date(`${series.at(-1)!.date}T06:00:00Z`))}</span>
+            <span>{dayLabel(series[0].date)}</span>
+            <span>{dayLabel(series.at(-1)!.date)}</span>
           </div>
 
           <p
@@ -175,7 +178,7 @@ export function CasualtyTrend({ series }: { series: DayPoint[] }) {
             aria-live="polite"
           >
             {active
-              ? `${nepalDate.format(new Date(`${active.date}T06:00:00Z`))}: ${active.dead} died, ${active.missing} missing, ${active.injured} injured`
+              ? `${dayLabel(active.date)}: ${active.dead} died, ${active.missing} missing, ${active.injured} injured`
               : "Hover a day for its figures."}
           </p>
         </div>

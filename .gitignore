@@ -95,3 +95,6 @@ android-capacitor/app/build/
 android-capacitor/app/src/main/assets/public/
 dist/
 
+
+# Country data downloads (scripts/build-country-data.mjs)
+.cache/

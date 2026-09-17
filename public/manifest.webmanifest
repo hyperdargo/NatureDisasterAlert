@@ -1,12 +1,12 @@
 {
   "name": "Nature Disaster Alert by DTEmpire",
   "short_name": "Disaster Alert",
-  "description": "Live flood, landslide, earthquake and storm alerts for your area, with verified casualty figures.",
+  "description": "Live earthquake, flood, cyclone, wildfire and storm alerts for your country, with its emergency numbers one tap away.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#0d0d0d",
-  "theme_color": "#0d0d0d",
+  "background_color": "#05070a",
+  "theme_color": "#05070a",
   "orientation": "portrait-primary",
   "categories": [
     "weather",

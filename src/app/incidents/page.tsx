@@ -1,30 +1,25 @@
 import type { Metadata } from "next";
 import { IncidentsView } from "@/components/IncidentsView";
-import { WINDOW_DAYS, loadFeedPayload } from "@/lib/feed-page";
-
-export const revalidate = 120;
+import { WINDOW_DAYS } from "@/lib/feed-page";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/incidents" },
   title: "Incident log",
   description:
-    "Every hazard incident reported in Nepal in the last 30 days, with daily casualty trends and the worst-affected districts.",
+    "Every hazard reported in your country in the last 30 days: official warnings where they exist, verified casualty figures for Nepal, and everything the global monitors track.",
 };
 
-export default async function IncidentsPage() {
-  const initial = await loadFeedPayload();
+export default function IncidentsPage() {
   return (
-    <>
-      <div className="mb-6 max-w-2xl">
-        <h1 className="text-2xl leading-tight font-medium tracking-tight text-ink sm:text-3xl">
-          Incident log
-        </h1>
-        <p className="mt-2 text-sm text-ink-secondary">
-          Every report filed in the last {WINDOW_DAYS} days, with the trends and
-          the districts behind the numbers.
+    <div className="page">
+      <div className="mb-10 max-w-3xl">
+        <h1 className="display text-[clamp(2.4rem,6vw,4.5rem)] text-ink">Incident log</h1>
+        <p className="mt-4 text-base text-ink-secondary">
+          Everything reported in the last {WINDOW_DAYS} days, with what each source can and cannot
+          tell you.
         </p>
       </div>
-      <IncidentsView initial={initial} days={WINDOW_DAYS} />
-    </>
+      <IncidentsView days={WINDOW_DAYS} />
+    </div>
   );
 }

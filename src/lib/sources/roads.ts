@@ -162,7 +162,7 @@ export function getRoadAdvisory(events: DisasterEvent[]): RoadAdvisory & { warmi
 
 function pickCandidates(events: DisasterEvent[]): DisasterEvent[] {
   return events
-    .filter((event) => event.inNepal)
+    .filter((event) => event.country === "NP")
     .filter((event) => event.kind === "landslide" || event.kind === "flood")
     .filter((event) => event.severity !== "good")
     .slice(0, MAX_INCIDENTS);
@@ -203,7 +203,7 @@ export async function fetchRoadAdvisory(
     }));
 
   const candidates = events
-    .filter((event) => event.inNepal)
+    .filter((event) => event.country === "NP")
     .filter((event) => event.kind === "landslide" || event.kind === "flood")
     .filter((event) => event.severity !== "good")
     .slice(0, MAX_INCIDENTS);

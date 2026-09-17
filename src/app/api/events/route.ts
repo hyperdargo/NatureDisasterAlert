@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { corsHeaders, handleOptions } from "@/lib/cors";
 import { describeError } from "@/lib/fetch-upstream";
 import { getFeed } from "@/lib/aggregate";
+import { eventsForCountry } from "@/lib/country-feed";
 import { parseQuery } from "@/lib/params";
 import { clientKeyFrom, rateLimit } from "@/lib/rate-limit";
 
@@ -35,15 +36,20 @@ export async function GET(request: Request) {
   if (!query.success) {
     return NextResponse.json({ error: "Invalid query parameters." }, { status: 400, headers: corsHeaders(request) });
   }
-  const { days, scope } = query.data;
+  const { days, scope, country } = query.data;
 
   try {
     const feed = await getFeed(days);
-    const events =
-      scope === "nepal" ? feed.events.filter((e) => e.inNepal) : feed.events;
+    // `country` is what the current interface sends. Without it, `scope`
+    // keeps the answer that Android apps already installed depend on.
+    const events = country
+      ? eventsForCountry(feed.events, country)
+      : scope === "nepal"
+        ? feed.events.filter((e) => e.country === "NP")
+        : feed.events;
 
     return NextResponse.json(
-      { ...feed, events, scope, days },
+      { ...feed, events, scope, country: country ?? null, days },
       {
         headers: {
           // Serve instantly from the edge, refresh in the background.

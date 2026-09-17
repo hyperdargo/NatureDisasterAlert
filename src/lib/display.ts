@@ -10,7 +10,7 @@ import type { Area, HazardKind, Severity } from "./types";
  * and the value can follow the theme. `hex` is the same colour resolved,
  * because MapLibre parses colours itself on a canvas and cannot read a CSS
  * variable. The status scale is mode-invariant by design, so the two never
- * drift apart.
+ * drift apart. Keep these equal to the --status-* values in globals.css.
  */
 export const SEVERITY_STYLE: Record<
   Severity,
@@ -19,28 +19,28 @@ export const SEVERITY_STYLE: Record<
   critical: {
     label: "Emergency",
     token: "var(--status-critical)",
-    hex: "#d03b3b",
+    hex: "#ff6259",
     icon: "siren",
     rank: 3,
   },
   serious: {
     label: "Warning",
     token: "var(--status-serious)",
-    hex: "#ec835a",
+    hex: "#ff9a5c",
     icon: "warning",
     rank: 2,
   },
   warning: {
     label: "Watch",
     token: "var(--status-warning)",
-    hex: "#fab219",
+    hex: "#ffc23d",
     icon: "eye",
     rank: 1,
   },
   good: {
     label: "Advisory",
     token: "var(--status-good)",
-    hex: "#0ca30c",
+    hex: "#3ccf6e",
     icon: "info",
     rank: 0,
   },
@@ -78,20 +78,37 @@ export function relativeTime(iso: string, now: number): string {
   return rtf.format(Math.round(days / 30), "month");
 }
 
-export const nepalDateTime = new Intl.DateTimeFormat("en-GB", {
-  timeZone: "Asia/Kathmandu",
-  day: "2-digit",
-  month: "short",
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false,
-});
+const formatters = new Map<string, Intl.DateTimeFormat>();
 
-export const nepalDate = new Intl.DateTimeFormat("en-GB", {
-  timeZone: "Asia/Kathmandu",
-  day: "2-digit",
-  month: "short",
-});
+function cached(key: string, make: () => Intl.DateTimeFormat): Intl.DateTimeFormat {
+  let formatter = formatters.get(key);
+  if (!formatter) {
+    formatter = make();
+    formatters.set(key, formatter);
+  }
+  return formatter;
+}
+
+/** "14 Sep, 18:05" in the given zone. Zones come from the country profile. */
+export function localDateTime(timeZone: string): Intl.DateTimeFormat {
+  return cached(`dt:${timeZone}`, () =>
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone,
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }),
+  );
+}
+
+/** "14 Sep" in the given zone. */
+export function localDate(timeZone: string): Intl.DateTimeFormat {
+  return cached(`d:${timeZone}`, () =>
+    new Intl.DateTimeFormat("en-GB", { timeZone, day: "2-digit", month: "short" }),
+  );
+}
 
 /**
  * Render a count that may legitimately be unknown.
@@ -104,7 +121,7 @@ export function formatCount(n: number | null): string {
 
 /**
  * "Belbari Municipality-8, Morang" - how an address is actually spoken in
- * Nepal, narrowest part first. Safe to call from client components.
+ * Nepal, narrowest part first. Only BIPAD records carry an area. Safe to call from client components.
  */
 export function formatAreaLabel(area: Area | null): string | null {
   if (!area) return null;

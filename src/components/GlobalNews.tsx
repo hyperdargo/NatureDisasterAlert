@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Globe } from "@phosphor-icons/react/dist/ssr";
 import { SeverityBadge } from "./SeverityBadge";
 import { SEVERITY_STYLE, compact, relativeTime } from "@/lib/display";
+import { countryName } from "@/lib/countries";
 import { HAZARD_LABEL, type DisasterEvent } from "@/lib/types";
 
 /**
@@ -25,7 +26,9 @@ function groupByCountry(events: DisasterEvent[]): CountryGroup[] {
   const groups = new Map<string, CountryGroup>();
 
   for (const event of events) {
-    const country = event.place?.trim();
+    // Grouped by resolved country, so "India" from GDACS and a USGS place
+    // ending "India" land in one card.
+    const country = event.country ? countryName(event.country) : null;
     if (!country) continue;
 
     const group = groups.get(country) ?? {
@@ -73,9 +76,9 @@ export function GlobalNews({
     return (
       <section aria-labelledby="news-heading">
         <h2 id="news-heading" className="mb-1 text-sm font-medium text-ink">
-          Disaster news worldwide
+          Elsewhere in the world
         </h2>
-        <p className="rounded-lg border border-dashed border-edge p-8 text-center text-sm text-ink-secondary">
+        <p className="rounded-3xl border border-dashed border-edge p-8 text-center text-sm text-ink-secondary">
           No international events are being tracked right now.
         </p>
       </section>
@@ -90,7 +93,7 @@ export function GlobalNews({
           className="flex items-center gap-1.5 text-sm font-medium text-ink"
         >
           <Globe size={15} weight="duotone" aria-hidden />
-          Disaster news worldwide
+          Elsewhere in the world
         </h2>
         <p className="text-xs text-ink-secondary">
           {groups.length} countries affected, most serious first
@@ -101,7 +104,7 @@ export function GlobalNews({
         {shown.map((group) => (
           <article
             key={group.country}
-            className="flex flex-col rounded-lg border border-edge bg-surface p-4"
+            className="flex flex-col rounded-3xl border border-edge bg-surface p-4"
           >
             <header className="flex items-start justify-between gap-2">
               <h3 className="min-w-0 text-sm font-medium text-ink">{group.country}</h3>

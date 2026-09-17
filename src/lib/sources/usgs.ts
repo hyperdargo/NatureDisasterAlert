@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { fetchJson } from "../fetch-upstream";
-import { isInNepal } from "../geo";
+import { countryForEvent } from "../countries/server";
 import { EMPTY_CASUALTIES, type DisasterEvent, type Severity } from "../types";
 
 /**
@@ -52,9 +52,11 @@ export async function fetchUsgs(
   const params = new URLSearchParams({
     format: "geojson",
     starttime: sinceIso,
-    minmagnitude: bbox ? "3.0" : "5.0",
+    // Worldwide down to M4.5, which a person nearby may feel, so every
+    // country's "near me" list has its quakes and not only the big ones.
+    minmagnitude: bbox ? "3.0" : "4.5",
     orderby: "time",
-    limit: "400",
+    limit: bbox ? "400" : "1500",
   });
   if (bbox) {
     params.set("minlatitude", String(bbox.minLat));
@@ -78,6 +80,7 @@ export async function fetchUsgs(
 
     const mag = p.mag ?? null;
     const depth = Number.isFinite(depthKm) ? Math.round(depthKm as number) : null;
+    const country = countryForEvent(lat, lon, p.place?.split(",").at(-1));
 
     events.push({
       id: `usgs-${id}`,
@@ -99,7 +102,8 @@ export async function fetchUsgs(
         .filter(Boolean)
         .join(" · ") || null,
       url: p.url ?? null,
-      inNepal: isInNepal(lat, lon),
+      country,
+      inNepal: country === "NP",
       area: null,
     });
   }

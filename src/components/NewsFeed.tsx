@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { ArrowSquareOut, Newspaper } from "@phosphor-icons/react/dist/ssr";
 import { relativeTime } from "@/lib/display";
 import { apiUrl } from "@/lib/api-base";
+import { useCountry } from "./CountryProvider";
 
 /**
- * Press coverage of Nepal disasters.
+ * Press coverage of disasters in the reader's country.
  *
  * Deliberately presented as a separate feed rather than attached to individual
  * incidents. The underlying source is a keyword search over world media, which
@@ -24,16 +25,18 @@ export interface NewsArticle {
 }
 
 export function NewsFeed({ now }: { now: number }) {
+  const { code, info } = useCountry();
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [state, setState] = useState<"loading" | "done" | "empty">("loading");
 
   useEffect(() => {
+    if (!code) return;
     let cancelled = false;
     let retry: ReturnType<typeof setTimeout> | undefined;
 
     const load = async (attempt: number) => {
       try {
-        const response = await fetch(apiUrl("/api/news"));
+        const response = await fetch(apiUrl(`/api/news?country=${encodeURIComponent(code)}`));
         const data = (await response.json()) as {
           articles?: NewsArticle[];
           warming?: boolean;
@@ -61,12 +64,18 @@ export function NewsFeed({ now }: { now: number }) {
       }
     };
 
-    void load(0);
+    // Deferred so the reset does not cascade a render inside the effect body.
+    const start = setTimeout(() => {
+      setState("loading");
+      setArticles([]);
+      void load(0);
+    }, 0);
     return () => {
+      clearTimeout(start);
       cancelled = true;
       clearTimeout(retry);
     };
-  }, []);
+  }, [code]);
 
   // Supplementary content: if it is unavailable, say nothing rather than
   // occupying the page with an error about something nobody asked for.
@@ -83,7 +92,7 @@ export function NewsFeed({ now }: { now: number }) {
           In the news
         </h2>
         <p className="text-xs text-ink-secondary">
-          Coverage of Nepal disasters, not tied to a specific incident above
+          Coverage of disasters in {info?.name ?? "your country"}, not tied to a specific incident
         </p>
       </div>
 
@@ -92,7 +101,7 @@ export function NewsFeed({ now }: { now: number }) {
           {[0, 1, 2].map((key) => (
             <li
               key={key}
-              className="animate-pulse rounded-lg border border-edge bg-surface p-4"
+              className="animate-pulse rounded-3xl border border-edge bg-surface p-4"
             >
               <div className="h-3 w-24 rounded bg-grid" />
               <div className="mt-3 h-3.5 w-full rounded bg-grid" />
@@ -108,7 +117,7 @@ export function NewsFeed({ now }: { now: number }) {
                 href={article.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-full flex-col rounded-lg border border-edge bg-surface p-4 transition-colors hover:border-edge-strong"
+                className="flex h-full flex-col rounded-3xl border border-edge bg-surface p-4 transition-colors hover:border-edge-strong"
               >
                 <p className="flex items-center gap-1.5 text-[11px] text-ink-muted">
                   <span className="truncate font-medium">{article.outlet}</span>

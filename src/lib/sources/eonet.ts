@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { fetchJson } from "../fetch-upstream";
-import { isInNepal } from "../geo";
+import { countryForEvent } from "../countries/server";
 import { EMPTY_CASUALTIES, type DisasterEvent, type HazardKind } from "../types";
 
 /**
@@ -75,6 +75,7 @@ export async function fetchEonet(sinceIso: string): Promise<DisasterEvent[]> {
     if (!when || Number.isNaN(when.getTime())) continue;
 
     const categoryId = ev.categories[0]?.id ?? "";
+    const country = countryForEvent(lat, lon);
     events.push({
       id: `eonet-${ev.id}`,
       source: "eonet",
@@ -89,7 +90,8 @@ export async function fetchEonet(sinceIso: string): Promise<DisasterEvent[]> {
       casualties: { ...EMPTY_CASUALTIES },
       metric: ev.categories[0]?.title?.trim() || null,
       url: ev.link ?? null,
-      inNepal: isInNepal(lat, lon),
+      country,
+      inNepal: country === "NP",
       area: null,
     });
   }

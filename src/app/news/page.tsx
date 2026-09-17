@@ -1,30 +1,23 @@
 import type { Metadata } from "next";
 import { NewsView } from "@/components/NewsView";
-import { WINDOW_DAYS, loadFeedPayload } from "@/lib/feed-page";
-
-export const revalidate = 300;
+import { WINDOW_DAYS } from "@/lib/feed-page";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/news" },
   title: "News",
-  description:
-    "Press coverage of disasters in Nepal, and hazards being tracked in other countries.",
+  description: "Press coverage of disasters in your country, and hazards being tracked around the world.",
 };
 
-export default async function NewsPage() {
-  const initial = await loadFeedPayload();
+export default function NewsPage() {
   return (
-    <>
-      <div className="mb-6 max-w-2xl">
-        <h1 className="text-2xl leading-tight font-medium tracking-tight text-ink sm:text-3xl">
-          News
-        </h1>
-        <p className="mt-2 text-sm text-ink-secondary">
-          Coverage of disasters in Nepal, and what is being tracked elsewhere in
-          the world.
+    <div className="page">
+      <div className="mb-10 max-w-3xl">
+        <h1 className="display text-[clamp(2.4rem,6vw,4.5rem)] text-ink">News</h1>
+        <p className="mt-4 text-base text-ink-secondary">
+          Coverage of disasters where you are, and what is being tracked elsewhere.
         </p>
       </div>
-      <NewsView initial={initial} days={WINDOW_DAYS} />
-    </>
+      <NewsView days={WINDOW_DAYS} />
+    </div>
   );
 }

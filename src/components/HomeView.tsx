@@ -1,201 +1,181 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
-import { ArrowRight, Warning } from "@phosphor-icons/react/dist/ssr";
-import { CoverageNotice } from "./CoverageNotice";
-import { HazardMap } from "./HazardMap";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowUpRight, Warning } from "@phosphor-icons/react/dist/ssr";
+import { useCountry } from "./CountryProvider";
 import { InstallCard } from "./InstallCard";
-import { NearbyPanel, NotificationToggle, selectNearby } from "./NearbyPanel";
-import { StatTiles } from "./StatTiles";
 import { useLocation } from "./LocationProvider";
-import { useLiveFeed, type FeedPayload } from "@/hooks/useLiveFeed";
+import { GuideGallery } from "./home/GuideGallery";
+import { HowItWorks } from "./home/HowItWorks";
+import { MapSection } from "./home/MapSection";
+import { OfficialSection } from "./home/OfficialSection";
+import { StatusStage } from "./home/StatusStage";
+import { useLiveFeed } from "@/hooks/useLiveFeed";
 import { useNow } from "@/hooks/useBrowserState";
 import { useLocalAlerts } from "@/hooks/usePwa";
+import { headlineNumber, numbersFor } from "@/lib/countries/emergency";
+import { profileFor } from "@/lib/countries/profiles";
 import { formatDistance } from "@/lib/geo";
 import { relativeTime } from "@/lib/display";
+import { selectNearby, splitByRecency } from "@/lib/nearby";
+import type { HazardKind } from "@/lib/types";
 
 /**
- * The home tab answers one question: is anything dangerous near me right now.
+ * The home screen, top to bottom:
  *
- * Everything that is worth reading but not worth scrolling past in an
- * emergency now lives in its own tab. What stays here is the proximity list,
- * the headline figures with their caveat, and the map. The rest is one tap
- * away and linked at the bottom.
+ *   status     Am I in danger, and who do I call. The signature: a globe that
+ *              dives onto the country as you scroll.           (pinned dive)
+ *   map        Everything in the country.                      (no motion)
+ *   official   What the national record or warning service says. (stillness)
+ *   guides     What to do, one hazard at a time.  (pinned horizontal gallery)
+ *   how        How the data reaches the phone, and what never leaves it.
+ *                                                    (line drawn by scroll)
+ *   more       The other tabs.                                  (stillness)
+ *
+ * Every mechanism appears once. The top of the page answers the emergency
+ * question before any of the motion has anything to do with it.
  */
-const MORE = [
-  {
-    href: "/incidents",
-    title: "Incident log and charts",
-    description: "Every report, with daily trends and the worst-hit districts",
-  },
-  {
-    href: "/news",
-    title: "News",
-    description: "Press coverage, and what is happening in other countries",
-  },
-  {
-    href: "/roads",
-    title: "Roads",
-    description: "Highways with hazards reported nearby, before you travel",
-  },
-  {
-    href: "/prepare",
-    title: "What to do",
-    description: "Actions for each hazard, ordered by what actually kills",
-  },
-] as const;
-
-export function HomeView({
-  initial,
-  days,
-  radiusKm,
-  onRadiusChange,
-}: {
-  initial: FeedPayload;
-  days: number;
-  radiusKm: number;
-  onRadiusChange: (km: number) => void;
-}) {
-  const { data, refresh, refreshing, problem, lastError } = useLiveFeed(initial, days, true);
+export function HomeView({ days }: { days: number }) {
+  const { data, refresh, refreshing, problem, lastError } = useLiveFeed(days, true);
   const location = useLocation();
+  const country = useCountry();
   const alerts = useLocalAlerts();
+  const [radiusKm, setRadiusKm] = useState(50);
   const notifiedFor = useRef<Set<string>>(new Set());
+
+  const allEvents = useMemo(() => [...data.local, ...data.elsewhere], [data.local, data.elsewhere]);
+  const now = useNow(Date.parse(data.generatedAt));
+  const { recent: nearby, olderCount } = useMemo(
+    () =>
+      splitByRecency(
+        location.coords ? selectNearby(allEvents, location.coords, radiusKm) : [],
+        now,
+      ),
+    [allEvents, location.coords, radiusKm, now],
+  );
 
   // Raise a notification the first time a serious hazard appears nearby.
   useEffect(() => {
     if (!alerts.enabled || !location.coords) return;
-    const nearby = selectNearby(data.nepal, location.coords, radiusKm)
+    const fresh = nearby
       .filter((hazard) => hazard.severity === "critical" || hazard.severity === "serious")
       .filter((hazard) => !notifiedFor.current.has(hazard.id));
-    if (nearby.length === 0) return;
-
-    for (const hazard of nearby) notifiedFor.current.add(hazard.id);
+    if (fresh.length === 0) return;
+    for (const hazard of fresh) notifiedFor.current.add(hazard.id);
     void alerts.notify(
-      nearby.slice(0, 3).map((hazard) => ({
+      fresh.slice(0, 3).map((hazard) => ({
         id: hazard.id,
         title: hazard.title,
         body: `${formatDistance(hazard.distanceKm)} · ${relativeTime(hazard.occurredAt, Date.now())}`,
         severity: hazard.severity,
       })),
     );
-  }, [data.nepal, location.coords, radiusKm, alerts]);
+  }, [nearby, location.coords, alerts]);
 
-  // Ticks each minute, seeded from the server clock so the first render
-  // matches on both sides and relative stamps age on their own.
-  const now = useNow(Date.parse(data.generatedAt));
+  const activeKinds = useMemo(
+    () => [...new Set(data.local.map((event) => event.kind))] as HazardKind[],
+    [data.local],
+  );
+  const headline = headlineNumber(numbersFor(country.code));
+  const profile = country.code ? profileFor(country.code) : null;
+  const countryName = country.info?.name ?? null;
+
+  const more = [
+    { href: "/incidents", title: "Incident log", note: "Every report, with trends" },
+    { href: "/news", title: "News", note: "Press coverage and the world" },
+    ...(profile?.roads ? [{ href: "/roads", title: "Roads", note: "Highways with hazards nearby" }] : []),
+    { href: "/prepare", title: "Prepare", note: "Guides and a kit list" },
+    { href: "/faq", title: "Questions", note: "Where the data comes from" },
+  ];
 
   return (
-    <div className="space-y-6 sm:space-y-8">
-      {(data.degraded.length > 0 || problem !== "none") && (
-        <p
-          role="status"
-          className="flex items-start gap-2 rounded-lg border px-4 py-2.5 text-xs"
-          style={{
-            borderColor: "var(--status-warning)",
-            color: "var(--ink-secondary)",
-            backgroundColor: "color-mix(in srgb, var(--status-warning) 8%, transparent)",
-          }}
-        >
-          <Warning size={14} weight="fill" className="mt-px shrink-0 text-warning" aria-hidden />
-          <span>
-            {problem === "offline"
-              ? "You are offline. These figures are from the last successful update and may be out of date."
-              : problem === "unreachable"
-                ? data.pending
-                  ? "Could not load hazard data. Check your connection, then use Retry below."
-                  : "Could not reach the server for the latest update, so these figures may be a few minutes old. Retrying automatically."
-                : `Some sources did not respond this cycle (${data.degraded.join(", ")}). Coverage may be incomplete.`}
-            {/* On a phone there is no console to open, so the reason is shown
-                rather than only logged. */}
-            {lastError && data.pending && (
-              <span className="mt-1 block text-ink-muted">{lastError}</span>
-            )}
-          </span>
-        </p>
-      )}
-
-      <NearbyPanel
-        events={data.nepal}
-        status={location.status}
-        coords={location.coords}
-        message={location.message}
-        hasAsked={location.hasAsked}
-        resolvingConsent={location.resolvingConsent}
+    <>
+      <StatusStage
+        events={allEvents}
+        nearby={nearby}
+        olderCount={olderCount}
+        location={location}
         radiusKm={radiusKm}
-        onRadiusChange={onRadiusChange}
-        onAllow={location.allow}
-        onDecline={location.decline}
+        onRadiusChange={setRadiusKm}
+        pending={data.pending}
+        problem={problem}
+        lastError={lastError}
+        refreshing={refreshing}
+        onRefresh={() => void refresh()}
+        generatedAt={data.generatedAt}
         now={now}
-        dataPending={data.pending ?? false}
-        dataProblem={problem}
+        alerts={alerts}
+        trackedInCountry={data.local.length}
       />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <NotificationToggle
-          enabled={alerts.enabled}
-          supported={alerts.supported}
-          blocked={alerts.blocked}
-          onEnable={() => void alerts.request()}
-        />
-        <button
-          type="button"
-          onClick={() => void refresh()}
-          disabled={refreshing}
-          className={
-            data.pending
-              ? "ml-auto rounded border border-edge-strong px-3 py-1.5 text-xs text-ink transition-colors disabled:opacity-60"
-              : "ml-auto text-xs text-ink-muted transition-colors hover:text-ink-secondary disabled:opacity-60"
-          }
-        >
-          {refreshing
-            ? "Refreshing"
-            : data.pending
-              ? "Retry"
-              : `Updated ${relativeTime(data.generatedAt, now)}`}
-        </button>
-      </div>
-
-      <InstallCard />
-
-      {data.pending ? (
-        <div
-          className="h-28 animate-pulse rounded-lg border border-edge bg-surface"
-          role="status"
-          aria-label="Loading reported figures"
-        />
-      ) : (
-        <>
-          <StatTiles totals={data.stats.totals} days={days} />
-          <CoverageNotice deathsInWindow={data.stats.totals.dead} />
-        </>
+      {(data.degraded.length > 0 || (problem !== "none" && !data.pending)) && (
+        <div className="mx-auto w-full max-w-[1400px] px-[var(--gutter)] pt-6">
+          <p
+            role="status"
+            className="flex items-start gap-2 rounded-2xl border px-4 py-3 text-sm text-ink-secondary"
+            style={{
+              borderColor: "var(--status-warning)",
+              backgroundColor: "color-mix(in srgb, var(--status-warning) 7%, transparent)",
+            }}
+          >
+            <Warning size={16} weight="fill" className="mt-0.5 shrink-0 text-warning" aria-hidden />
+            <span>
+              {problem === "offline"
+                ? "You are offline. These figures are from the last successful update and may be out of date."
+                : problem === "unreachable"
+                  ? "Could not reach the server for the latest update, so this may be a few minutes old. Retrying automatically."
+                  : `Some sources did not respond this cycle (${data.degraded.join(", ")}). Coverage may be incomplete.`}
+            </span>
+          </p>
+        </div>
       )}
 
-      <section aria-label="Hazard map" className="h-[clamp(320px,48vh,520px)]">
-        <HazardMap events={data.nepal} viewer={location.coords} />
-      </section>
+      <MapSection
+        events={allEvents}
+        viewer={location.coords}
+        country={country.code}
+        countryName={countryName}
+        localCount={data.local.length}
+        pending={data.pending}
+      />
 
-      <nav aria-label="More sections">
-        <h2 className="mb-3 text-sm font-medium text-ink">More</h2>
-        <ul className="grid gap-2 sm:grid-cols-2">
-          {MORE.map((item) => (
-            <li key={item.href}>
+      <OfficialSection
+        country={country.code}
+        countryName={countryName}
+        stats={data.stats}
+        local={data.local}
+        pending={data.pending}
+        now={now}
+      />
+
+      <GuideGallery activeKinds={activeKinds} countryName={countryName} number={headline?.number ?? null} />
+
+      <HowItWorks officialName={profile?.official?.name ?? null} />
+
+      <nav aria-label="More sections" className="mx-auto w-full max-w-[1400px] px-[var(--gutter)] pt-28">
+        <div className="mb-10">
+          <InstallCard />
+        </div>
+        <ul className="border-t border-edge">
+          {more.map((item) => (
+            <li key={item.href} className="border-b border-edge">
               <Link
                 href={item.href}
-                className="flex min-h-16 items-center gap-3 rounded-lg border border-edge bg-surface px-4 py-3 transition-colors hover:border-edge-strong"
+                className="group flex min-h-20 items-center gap-6 py-4 transition-colors hover:text-ice"
               >
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm text-ink">{item.title}</span>
-                  <span className="mt-0.5 block text-xs text-ink-secondary">
-                    {item.description}
-                  </span>
-                </span>
-                <ArrowRight size={16} className="shrink-0 text-ink-muted" aria-hidden />
+                <span className="display flex-1 text-[clamp(1.7rem,4.5vw,3.4rem)]">{item.title}</span>
+                <span className="readout hidden sm:block">{item.note}</span>
+                <ArrowUpRight
+                  size={28}
+                  className="shrink-0 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
+                  aria-hidden
+                />
               </Link>
             </li>
           ))}
         </ul>
       </nav>
-    </div>
+    </>
   );
 }

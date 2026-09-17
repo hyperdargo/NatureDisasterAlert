@@ -4,13 +4,13 @@ import { useState } from "react";
 import { ArrowSquareOut } from "@phosphor-icons/react/dist/ssr";
 import { SeverityBadge } from "./SeverityBadge";
 import { ImpactBadge } from "./ImpactBadge";
-import { formatAreaLabel, nepalDateTime, relativeTime } from "@/lib/display";
+import { formatAreaLabel, localDateTime, relativeTime } from "@/lib/display";
 import { HAZARD_LABEL, SOURCE_LABEL, type DisasterEvent, type HazardKind } from "@/lib/types";
 
 const PAGE_SIZE = 12;
 
 /**
- * The full incident log for Nepal, newest first.
+ * The full event log for a country, newest first.
  *
  * Casualty figures print as "not reported" when a source left them blank.
  * Rendering an unknown death toll as 0 would be a lie of formatting, and this
@@ -19,9 +19,14 @@ const PAGE_SIZE = 12;
 export function EventList({
   events,
   now,
+  timeZone,
+  title = "Incident log",
 }: {
   events: DisasterEvent[];
   now: number;
+  /** The country's zone, so dates read as local time there. */
+  timeZone: string;
+  title?: string;
 }) {
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [kindFilter, setKindFilter] = useState<HazardKind | "all">("all");
@@ -37,7 +42,7 @@ export function EventList({
     <section aria-labelledby="log-heading">
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-2">
         <h2 id="log-heading" className="text-sm font-medium text-ink">
-          Incident log
+          {title}
         </h2>
         <label className="flex items-center gap-2 text-xs text-ink-secondary">
           Hazard
@@ -97,7 +102,7 @@ export function EventList({
                       {relativeTime(event.occurredAt, now)}
                     </p>
                     <p className="tabular mt-0.5 text-[11px] whitespace-nowrap text-ink-muted">
-                      {nepalDateTime.format(new Date(event.occurredAt))}
+                      {localDateTime(timeZone).format(new Date(event.occurredAt))}
                     </p>
                   </div>
                 </div>

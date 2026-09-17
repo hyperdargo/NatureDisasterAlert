@@ -1,22 +1,14 @@
-/** Nepal's bounding box, used to tag events and to scope upstream queries. */
+/**
+ * Nepal's bounding box. Scopes the one country-specific upstream query left:
+ * earthquakes down to M3 inside Nepal, where the incident record is deepest.
+ * Country membership itself comes from src/lib/countries, not from this box.
+ */
 export const NEPAL_BBOX = {
   minLat: 26.347,
   maxLat: 30.447,
   minLon: 80.058,
   maxLon: 88.201,
 } as const;
-
-/** Roughly Kathmandu. Used only as the map's opening view, never as a user location. */
-export const NEPAL_CENTER = { lat: 28.3949, lon: 84.124 } as const;
-
-export function isInNepal(lat: number, lon: number): boolean {
-  return (
-    lat >= NEPAL_BBOX.minLat &&
-    lat <= NEPAL_BBOX.maxLat &&
-    lon >= NEPAL_BBOX.minLon &&
-    lon <= NEPAL_BBOX.maxLon
-  );
-}
 
 const EARTH_RADIUS_KM = 6371;
 

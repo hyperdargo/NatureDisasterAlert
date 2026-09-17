@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { corsHeaders, handleOptions } from "@/lib/cors";
 import { getNews } from "@/lib/sources/news";
+import { CountryParam } from "@/lib/params";
 import { clientKeyFrom, rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
@@ -16,9 +17,15 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Too many requests." }, { status: 429, headers: corsHeaders(request) });
   }
 
-  const { articles, warming } = getNews();
+  const raw = new URL(request.url).searchParams.get("country");
+  const country = raw === null ? { success: true as const, data: "NP" } : CountryParam.safeParse(raw);
+  if (!country.success) {
+    return NextResponse.json({ error: "Unknown country code." }, { status: 400, headers: corsHeaders(request) });
+  }
+
+  const { articles, warming } = getNews(country.data);
   return NextResponse.json(
-    { articles, warming, generatedAt: new Date().toISOString() },
+    { articles, warming, country: country.data, generatedAt: new Date().toISOString() },
     {
       headers: {
         "cache-control": warming

@@ -1,23 +1,11 @@
-import { HomeShell } from "@/components/HomeShell";
-import { WINDOW_DAYS, loadFeedPayload } from "@/lib/feed-page";
+import { HomeView } from "@/components/HomeView";
+import { WINDOW_DAYS } from "@/lib/feed-page";
 
-export const revalidate = 120;
-
-export default async function HomePage() {
-  const initial = await loadFeedPayload();
-  return (
-    <>
-      <div className="mb-6 max-w-2xl">
-        <h1 className="text-2xl leading-tight font-medium tracking-tight text-ink sm:text-3xl">
-          Know what is happening around you
-        </h1>
-        <p className="mt-2 text-sm text-ink-secondary">
-          Live floods, landslides, earthquakes and storms across Nepal, from the
-          government incident record and three international monitoring
-          services.
-        </p>
-      </div>
-      <HomeShell initial={initial} days={WINDOW_DAYS} />
-    </>
-  );
+/**
+ * Static. The server cannot know the visitor's country, so the page ships no
+ * feed snapshot and the browser fetches for the right country on its first
+ * render. It also means no build can bake stale or empty data into the page.
+ */
+export default function HomePage() {
+  return <HomeView days={WINDOW_DAYS} />;
 }

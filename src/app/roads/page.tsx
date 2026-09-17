@@ -11,17 +11,15 @@ export const metadata: Metadata = {
 
 export default function RoadsPage() {
   return (
-    <>
-      <div className="mb-6 max-w-2xl">
-        <h1 className="text-2xl leading-tight font-medium tracking-tight text-ink sm:text-3xl">
-          Roads
-        </h1>
-        <p className="mt-2 text-sm text-ink-secondary">
-          Highways with a landslide or flood reported nearby. Check with Traffic
-          Police before you travel.
+    <div className="page">
+      <div className="mb-10 max-w-3xl">
+        <h1 className="display text-[clamp(2.4rem,6vw,4.5rem)] text-ink">Roads</h1>
+        <p className="mt-4 text-base text-ink-secondary">
+          Highways with a landslide or flood reported nearby. Check with the traffic police
+          before you travel.
         </p>
       </div>
       <RoadAdvisory days={WINDOW_DAYS} />
-    </>
+    </div>
   );
 }
